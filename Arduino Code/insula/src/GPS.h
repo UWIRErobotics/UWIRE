@@ -3,10 +3,11 @@
 #ifndef GPS_H_
 #define GPS_H_
 
-class GPS {
+class GPS{
 public:
 	GPS();
-	virtual ~GPS();
+	GPS(long);
+	~GPS();
 
 	typedef enum{GGA = 0, GLL, GSA, GSV, RMC, VTG}NMEA_types;
 

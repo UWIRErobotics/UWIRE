@@ -1,20 +1,22 @@
-/*
- * GPS.cpp
- *
- *  Created on: 1-Jun-2009
- *      Author: lucy
- */
-
 #include "GPS.h"
 
-//GPS::GPS() {
-	// TODO Auto-generated constructor stub
 
-//}
+GPS::GPS(void)
+{
+	GPS(4800);
+}
 
-//GPS::~GPS() {
-	// TODO Auto-generated destructor stub
-//}
+GPS::GPS(long baud)
+{
+	baudrate = baud;
+
+	Serial3.begin(baud);
+}
+
+GPS::~GPS()
+{
+	// ??? don't think there's anything to do...
+}
 
 byte GPS::request_feed(NMEA_types type, byte rate, boolean chksum_enable)
 {
