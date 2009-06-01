@@ -1,24 +1,36 @@
+#include "arduino/WProgram.h"
+
 #ifndef GPS_H_
 #define GPS_H_
 
-#include "arduino/WProgram.h"
-#include "globals.h"
+class GPS {
+public:
+	GPS();
+	virtual ~GPS();
 
-/***Defines***/
-typedef enum{GGA = 0, GLL, GSA, GSV, RMC, VTG}NMEA_types;
+	typedef enum{GGA = 0, GLL, GSA, GSV, RMC, VTG}NMEA_types;
 
-typedef union _chksum{
-	byte container;
-	struct _sigchar{
-		byte upper : 4;
-		byte lower : 4;
-	}sigchar;
-}chksum;
+	byte request_feed(NMEA_types, byte, boolean);
+	byte stop_feed   (NMEA_types type)
+	{
+		return request_feed(type, 0, true);
+	}
 
+	void calc_checksum(void);
 
-/***Command Functions***/
-byte stop_feed   (NMEA_types);
-byte request_feed(NMEA_types, byte, boolean);
+private:
+	char buffer_in;
+	char buffer_out[25];
 
+	long baudrate;
+
+	typedef union _chksum{
+		byte container;
+		struct _sigchar{
+			byte upper : 4;
+			byte lower : 4;
+		}sigchar;
+	}chksum;
+};
 
 #endif /* GPS_H_ */
