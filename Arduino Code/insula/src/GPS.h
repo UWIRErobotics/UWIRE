@@ -5,33 +5,48 @@
 
 class GPS{
 public:
+	typedef enum {GGA = 0, GLL, GSA, GSV, RMC, VTG} NMEA_types;
+
 	GPS();
 	GPS(long);
 	~GPS();
 
-	typedef enum{GGA = 0, GLL, GSA, GSV, RMC, VTG}NMEA_types;
+// user commands
+   byte request_feed    (NMEA_types, byte, boolean);
+#define stop_feed (x)    request_feed(x,0,false)
+#define start_feed(x, y) request_feed(x,y,false)
 
-	byte request_feed(NMEA_types, byte, boolean);
-	byte stop_feed   (NMEA_types type)
-	{
-		return request_feed(type, 0, true);
-	}
-
-	void calc_checksum(void);
+//  data packaging / manipulation
+	byte filter_input();
 
 private:
+	void calc_checksum(void);
+
+	long baudrate;	// redundant / useless?
 	char buffer_in;
 	char buffer_out[25];
 
-	long baudrate;
-
-	typedef union _chksum{
+	typedef union {
 		byte container;
-		struct _sigchar{
+		struct {
 			byte upper : 4;
 			byte lower : 4;
 		}sigchar;
 	}chksum;
+
+	typedef struct {
+		char  messageID[6];	// $GPRMC
+		float UTCtime;
+		char  status;
+		float latitude;
+		char  lat_dir;
+		float longitude;
+		char  lon_dir;
+		float speed;
+		float course;
+		long  date;
+	} RMC_buffer;
 };
+
 
 #endif /* GPS_H_ */
