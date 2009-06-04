@@ -5,19 +5,6 @@
 
 #define ulong unsigned long
 
-typedef struct {  //28 bytes, MAYBE delete
-	char  messageID[6];	// $GPRMC
-	float UTCtime;
-	char  status;
-	float latitude;
-	char  lat_dir;
-	float longitude;
-	char  lon_dir;
-	float speed;
-	float course;
-	unsigned long  date;
-}_GPS_buffer;
-
 typedef struct {   // data [potentially] sent to brain; integers are better!
 	unsigned long time;
 	unsigned long speed;
@@ -35,11 +22,13 @@ public:
 	_GPS(long);
 	~_GPS();
 
-// user commands
+// 'raw' commands
 inline byte    available    (void)  { return Serial3.available(); }
 inline char    read         (void)  { return Serial3.read();      }
 
-_GPS_package*  get          (void);
+// user commands
+       byte    fill         (void);
+_GPS_package*  parse        (void);
        ulong   get          (data_types);
 	   void    send         (char *, byte);
 	   void    request      (NMEA_types, byte, byte, boolean);
@@ -48,16 +37,18 @@ inline void    start_feed   (NMEA_types x, byte y)            {request(x,0,y,fal
 inline void    request_feed (NMEA_types x, byte y, boolean z) {request(x,0,y,z);    }
 inline void    query        (NMEA_types x)					  {request(x,1,0,false);}
 
+
 private:
-	byte filter_input (void);
 	byte package_data (void);
 	void calc_checksum(void);
 	void send         (void);
 
-	char          buffer_in;	  //serial buffer
-	char          buffer_out[25]; //serial buffer
-	_GPS_buffer   GPS_buffer,  *pGPS_buffer;
-	_GPS_package  GPS_package, *pGPS_package;
+//  GPS buffers
+	char          buffer_in [75];
+	char          buffer_out[25];
+   _GPS_package   GPS_package, *pGPS_package;
+
+static const char seperator = ',';
 
 	typedef union {
 		byte container;
@@ -65,9 +56,29 @@ private:
 			byte upper : 4;
 			byte lower : 4;
 		}sigchar;
-	}chksum;
+	}nybble;
 };
 
-extern _GPS GPS;
+/** OBJECT 'DECLARATION' **/
+      extern _GPS GPS;
+/**************************/
+
+/*************** Notes ***************
+ * the structure of the GPS data is as follows:
+struct GPS_buffer;{
+  char  messageID[6];	// $GPRMC
+  float UTCtime;
+  char  status;
+  float latitude;
+  char  lat_dir;
+  float longitude;
+  char  lon_dir;
+  float speed;
+  float course;
+  unsigned long  date;
+}//28 bytes
+ *
+ *
+*************************************/
 
 #endif /* GPS_H_ */

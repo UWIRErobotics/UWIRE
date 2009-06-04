@@ -8,25 +8,179 @@ _GPS::_GPS(void)
 }
 
 _GPS::_GPS(long baud)
-{
-	Serial3.begin(baud);
-
-	pGPS_buffer  = &GPS_buffer;
-	pGPS_package = &GPS_package;
-
-//fill output buffer with command template '$PSRF103,00,00,00,00*00<CR><LF>'
-	char command_template[26]  = {'$','P','S','R','F','1','0','3',',','0','0',',',
-	                              '0','0',',','0','0',',','0','0','*','0','0',13,10};
-	for(int i = 0; i < 25; i++)
+{//								   1   2   3   4   5   6   7   8   9   20
+	char command_template[25]  = {'$','P','S','R','F','1','0','3',	 // output buffer's template
+								  ',','0','0',',','0','0',',','0',   // $PSRF103,00,00,00,00*00<CR><LF>
+	                              '0',',','0','0','*','0','0', 13,10};
+//  initialise or blank all values
+	for(int i = 0; i < 25; i++){
 		buffer_out[i] = command_template[i];
+		buffer_in[i]  = 0x0;}
+	for(int i = 25; i < 75; i++)
+		buffer_in[i]  = 0x0;
+
+	GPS_package.time       = 0x0;
+	GPS_package.speed      = 0x0;
+	GPS_package.course     = 0x0;
+	GPS_package.latitude   = 0x0;
+	GPS_package.longitude  = 0x0;
+	pGPS_package           = &GPS_package;
+
+//  begin serial connection
+	Serial3.begin(baud);
 }
 
-_GPS::~_GPS()
+_GPS::~_GPS()	{}
+
+byte _GPS::fill(void)
 {
-	// ??? don't think there's anything to do...
+	byte i = 0x00;
+
+	while(Serial3.available() > 0)
+	{
+		buffer_in[i] = Serial3.read();
+		i++;
+	}
+
+	return i;	//return # of characters (size of buffer in bytes)
 }
 
-void _GPS::request(NMEA_types type, byte mode, byte rate, boolean chksum_enable)
+_GPS_package* _GPS::parse(void)
+{
+	byte index = 0x00;
+	byte comma = 0x00;
+
+	do
+	{
+		if(seperator == buffer_in[index])	comma++;
+		else if ('.' != buffer_in[index])	//ignore decimals
+		{
+			switch(comma)
+			{
+			case 0 :	//message ID
+			{
+				char header[6] = {'$','G','P','R','M','C'};
+				if(buffer_in[index] != header[index])
+				{
+					Serial.println("Header mismatch!");
+					return NULL;
+				}
+				break;
+			}
+
+			case 1:		//time
+			{
+				GPS_package.time *= 10;
+				GPS_package.time += (buffer_in[index] - 48);
+				break;
+			}
+
+			case 2:		//status
+			{
+				if('A' != buffer_in[index])
+				{
+					Serial.println("Status invalid!");
+					return NULL;
+				}
+				break;
+			}
+
+			case 3:		//latitude
+			{
+				GPS_package.latitude *= 10;
+				GPS_package.latitude += (buffer_in[index] - 48);
+				break;
+			}
+
+			case 4:		//latitude indicator
+			{
+				if('N' != buffer_in[index])
+				{
+					Serial.println("Latitude heading incorrect!");
+					return NULL;
+				}
+				break;
+			}
+
+			case 5:		//longitude
+			{
+				GPS_package.longitude *= 10;
+				GPS_package.longitude += (buffer_in[index] - 48);
+				break;
+			}
+
+			case 6:		//longitude indicator
+			{
+				if('W' != buffer_in[index])
+				{
+					Serial.println("Longitude heading incorrect!");
+					return NULL;
+				}
+				break;
+			}
+
+			case 7:		//speed
+			{
+				GPS_package.speed *= 10;
+				GPS_package.speed += (buffer_in[index] - 48);
+				break;
+			}
+			case 8:		//course
+			{
+				GPS_package.course *= 10;
+				GPS_package.course += (buffer_in[index] - 48);
+				break;
+			}
+
+			case 9:		//date
+			case 10:	//magnetic variation
+			case 11:    //checksum (disabled)
+			default:
+			{
+				return pGPS_package;
+				break;
+			}
+			}//switch...case
+
+		}//separator != buffer_in[index]
+
+		index++;
+	} while(comma <= 8);
+
+	return pGPS_package;
+}
+
+unsigned long _GPS::get(data_types type)
+{
+	switch (type)
+	{
+	case time:
+		return GPS_package.time;
+		break;
+	case speed:
+		return GPS_package.speed;
+		break;
+	case course:
+		return GPS_package.course;
+		break;
+	case latitude:
+		return GPS_package.latitude;
+		break;
+	case longitude:
+		return GPS_package.longitude;
+		break;
+	}
+
+	return 0;	//should never get here!
+}
+
+void _GPS::send(char *ptr, byte length)
+{
+	for(int i = 0; i < length; i++)
+		Serial3.print(*ptr + i);
+}
+
+void _GPS::request(NMEA_types type, byte mode, byte rate, boolean chksum)
 {
 //  update template with user-defined NMEA type
 	if     (GGA == type)	buffer_out[10] = '0';
@@ -43,7 +197,7 @@ void _GPS::request(NMEA_types type, byte mode, byte rate, boolean chksum_enable)
 	buffer_out[16] = rate + 48;
 
 //	update user-defined checksum status
-	if(chksum_enable)
+	if(chksum)
 		buffer_out[19] = '1';
 	else
 		buffer_out[19] = '0';
@@ -53,23 +207,9 @@ void _GPS::request(NMEA_types type, byte mode, byte rate, boolean chksum_enable)
 	send();
 }
 
-_GPS_package* _GPS::get(void)
-{
-	byte status = filter_input();
-
-	if(0 == status)	return NULL;
-	else			return pGPS_package;
-}
-
-unsigned long _GPS::get(data_types type)
-{
-	return 0;	//TODO:  this!
-}
-
-
 void _GPS::calc_checksum()
 {
-	chksum checksum;
+	nybble checksum;
 	checksum.container = 0x00;
 
 	byte i;
@@ -86,12 +226,6 @@ void _GPS::calc_checksum()
 		buffer_out[22] = checksum.sigchar.upper + 48;
 	else
 		buffer_out[22] = checksum.sigchar.upper + 55;
-}
-
-
-byte _GPS::filter_input(void)
-{
-	return 0;	//TODO: this!
 }
 
 byte _GPS::package_data(void)
