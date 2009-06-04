@@ -2,7 +2,11 @@
 #define MAIN_H_
 
 #include "arduino/WProgram.h"
+
+//#include "ArduinoLink.h"
 #include "GPS.h"
+//#include "I2C.h"
+
 
 volatile char console_in;
 

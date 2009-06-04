@@ -17,6 +17,7 @@ void setup()
 	Serial.println("Insular Cortex Console");
 }
 
+
 void loop()
 {
 	if(Serial.available() > 0)
@@ -40,12 +41,18 @@ void loop()
 		else if('j' == console_in)	GPS.start_feed(GPS.GSV, 1);
 		else if('k' == console_in)	GPS.start_feed(GPS.RMC, 1);
 		else if('l' == console_in)	GPS.start_feed(GPS.VTG, 1);
+
+//	    void set_param(long baud, byte data_bits, boolean stop, byte parity)
+		else if('m' == console_in)	GPS.set_param(1200,  8, true, 0);
+		else if('n' == console_in)	GPS.set_param(2400,  8, true, 0);
+		else if('o' == console_in)	GPS.set_param(4800,  8, true, 0);
+		else if('p' == console_in)	GPS.set_param(9600,  8, true, 0);
+		else if('q' == console_in)	GPS.set_param(19200, 8, true, 0);
+		else if('r' == console_in)	GPS.set_param(38400, 8, true, 0);
 	}
 
 	if(GPS.available() > 0)
-	{
 		Serial.print(GPS.read());
-	}
 
 }
 

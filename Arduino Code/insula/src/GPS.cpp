@@ -1,17 +1,14 @@
 #include "GPS.h"
 
-_GPS GPS(4800);	//object we will be using
-
-_GPS::_GPS(void)
-{
-	_GPS(4800);
-}
+/** OBJECT DECLARATION **/
+     _GPS GPS(4800);
+/**************************/
 
 _GPS::_GPS(long baud)
-{//								   1   2   3   4   5   6   7   8   9   20
+{//                                1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9
 	char command_template[25]  = {'$','P','S','R','F','1','0','3',	 // output buffer's template
 								  ',','0','0',',','0','0',',','0',   // $PSRF103,00,00,00,00*00<CR><LF>
-	                              '0',',','0','0','*','0','0', 13,10};
+	                              '0',',','0','0','*','0','0', 13, 10};
 //  initialise or blank all values
 	for(int i = 0; i < 25; i++){
 		buffer_out[i] = command_template[i];
@@ -19,31 +16,31 @@ _GPS::_GPS(long baud)
 	for(int i = 25; i < 75; i++)
 		buffer_in[i]  = 0x0;
 
+	pGPS_package           = &GPS_package;
 	GPS_package.time       = 0x0;
 	GPS_package.speed      = 0x0;
 	GPS_package.course     = 0x0;
 	GPS_package.latitude   = 0x0;
 	GPS_package.longitude  = 0x0;
-	pGPS_package           = &GPS_package;
+
 
 //  begin serial connection
 	Serial3.begin(baud);
 }
 
-_GPS::~_GPS()	{}
 
 byte _GPS::fill(void)
 {
 	byte i = 0x00;
 
-	while(Serial3.available() > 0)
-	{
+	for(; Serial3.available() > 0; i++)
 		buffer_in[i] = Serial3.read();
-		i++;
-	}
+
+	Serial3.flush();
 
 	return i;	//return # of characters (size of buffer in bytes)
 }
+
 
 _GPS_package* _GPS::parse(void)
 {
@@ -150,35 +147,101 @@ _GPS_package* _GPS::parse(void)
 	return pGPS_package;
 }
 
+
 unsigned long _GPS::get(data_types type)
 {
 	switch (type)
 	{
-	case time:
-		return GPS_package.time;
-		break;
-	case speed:
-		return GPS_package.speed;
-		break;
-	case course:
-		return GPS_package.course;
-		break;
-	case latitude:
-		return GPS_package.latitude;
-		break;
-	case longitude:
-		return GPS_package.longitude;
-		break;
+		case time:
+			return GPS_package.time;
+			break;
+		case speed:
+			return GPS_package.speed;
+			break;
+		case course:
+			return GPS_package.course;
+			break;
+		case latitude:
+			return GPS_package.latitude;
+			break;
+		case longitude:
+			return GPS_package.longitude;
+			break;
 	}
 
 	return 0;	//should never get here!
 }
 
-void _GPS::send(char *ptr, byte length)
+
+//$PSRF100,<protocol>,<baud>,<DataBits>,<StopBits>,<Parity>*CKSUM<CR><LF>
+void _GPS::set_param(long baud, byte data_bits, boolean stop, byte parity)
 {
-	for(int i = 0; i < length; i++)
-		Serial3.print(*ptr + i);
+	byte index        = 15; //set to location of ending comma
+//  message header and protocol (only NMEA supported at this time)
+	char message[30]  = {'$','P','S','R','F','1','0','0',',','1',','};
+
+//  baud rate
+	char baud_rate[5] = {'0','0','0','0','0'};
+	switch(baud)
+	{
+		case 1200:
+			baud_rate[0] = '1';	baud_rate[1] = '2';
+			break;
+
+		case 2400:
+			baud_rate[0] = '2';	baud_rate[1] = '4';
+			break;
+
+		case 4800:
+			baud_rate[0] = '4';	baud_rate[1] = '8';
+			break;
+
+		case 9600:
+			baud_rate[0] = '9';	baud_rate[1] = '6';
+			break;
+
+		case 19200:
+			baud_rate[0] = '1';
+			baud_rate[1] = '9';
+			baud_rate[2] = '2';
+			index        = 16 ;
+			break;
+
+		case 38400:
+			baud_rate[0] = '3';
+			baud_rate[1] = '8';
+			baud_rate[2] = '4';
+			index        = 16 ;
+			break;
+	}
+
+	for(int i = 11; i < index; i++)
+		message[i] = baud_rate[i - 11];	//fill in numeric value
+	message[index++] = ',';
+
+//  update data bits (GPS only accepts 7 or 8 for NMEA)
+	message[index++] = data_bits + 48;
+	message[index++] = ',';
+
+
+//  update stop bits
+	if(stop)	message[index++] = '1';
+	else		message[index++] = '0';
+	message[index++] = ',';
+
+
+//  update parity (0 = none, 1 = odd, 2 = even)
+	message[index++] = parity + 48;
+
+	message[index++]  = '*';
+
+	calc_checksum(message);
+
+	send(message);
+
+	delay(10);
 }
+
 
 void _GPS::request(NMEA_types type, byte mode, byte rate, boolean chksum)
 {
@@ -204,38 +267,57 @@ void _GPS::request(NMEA_types type, byte mode, byte rate, boolean chksum)
 
 	calc_checksum();
 
-	send();
+	send(buffer_out, 25);
 }
 
-void _GPS::calc_checksum()
+
+void _GPS::calc_checksum(char *ptr)
 {
 	nybble checksum;
 	checksum.container = 0x00;
 
-	byte i;
-	for(i = 1; i <= 19; i++)
-		checksum.container ^= buffer_out[i];
+	if(*ptr == '$')	   ptr++;
+
+	for(; *ptr != '*'; ptr++)
+		checksum.container ^= *ptr;
 
 //  convert checksum into ASCII values, put lower byte first
+	ptr++;
 	if(checksum.sigchar.lower <= 0x9)
-		buffer_out[21] = checksum.sigchar.lower + 48; //= ASCI conversion for numbers
+		*ptr = checksum.sigchar.lower + 48; //= ASCI conversion for numbers
 	else
-		buffer_out[21] = checksum.sigchar.lower + 55; //= ASCI conversion for letters
+		*ptr = checksum.sigchar.lower + 55; //= ASCI conversion for letters
 
+	ptr++;
 	if(checksum.sigchar.upper <= 0x9)
-		buffer_out[22] = checksum.sigchar.upper + 48;
+		*ptr = checksum.sigchar.upper + 48;
 	else
-		buffer_out[22] = checksum.sigchar.upper + 55;
+		*ptr = checksum.sigchar.upper + 55;
 }
 
-byte _GPS::package_data(void)
-{
-	return 0;	//TODO: this!
-}
 
-void _GPS::send(void)
+/*SEND 'RAW' ARRAY OF CHARACTERS
+ * parameters: (ptr) = address of first element in array
+ * NOTE: this function assumes the end of the message was '*'
+ *       and that the checksum HAS BEEN CALCULATED!!! if not,
+ *       this function won't know where to stop!
+ */
+void _GPS::send(char *ptr)
 {
-	Serial3.print(buffer_out);
+#define GPSout(x)	Serial3.print(x); Serial.print(x);	//include 'Serial.print' only for debugging
 
-	Serial.print(buffer_out);	//just for debugging
+//	print everything up to the checksum boundary
+	for(; *ptr != '*'; ptr++)
+	{
+		GPSout(*ptr);
+	}
+	GPSout(*ptr);	//asterisk
+
+//  print checksum
+	ptr++; GPSout(*ptr);	//checksum1
+	ptr++; GPSout(*ptr);	//checksum2
+
+	char ender[2] = {13,10};
+	GPSout(ender[0]);	//<CR>
+	GPSout(ender[1]);	//<LF>
 }
