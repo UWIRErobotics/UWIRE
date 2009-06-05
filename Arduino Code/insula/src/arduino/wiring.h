@@ -1,27 +1,3 @@
-/*
-  wiring.h - Partial implementation of the Wiring API for the ATmega8.
-  Part of Arduino - http://www.arduino.cc/
-
-  Copyright (c) 2005-2006 David A. Mellis
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General
-  Public License along with this library; if not, write to the
-  Free Software Foundation, Inc., 59 Temple Place, Suite 330,
-  Boston, MA  02111-1307  USA
-
-  $Id: wiring.h 534 2008-11-26 14:14:59Z mellis $
-*/
-
 #ifndef Wiring_h
 #define Wiring_h
 
@@ -30,6 +6,10 @@
 
 #ifdef __cplusplus
 extern "C"{
+#endif
+
+#ifndef ARDUINO
+#define ARDUINO 16
 #endif
 
 #define HIGH 0x1
@@ -41,11 +21,11 @@ extern "C"{
 #define true 0x1
 #define false 0x0
 
-#define PI 3.14159265
-#define HALF_PI 1.57079
-#define TWO_PI 6.283185
-#define DEG_TO_RAD 0.01745329
-#define RAD_TO_DEG 57.2957786
+#define PI 3.1415926535897932384626433832795
+#define HALF_PI 1.5707963267948966192313216916398
+#define TWO_PI 6.283185307179586476925286766559
+#define DEG_TO_RAD 0.017453292519943295769236907684886
+#define RAD_TO_DEG 57.295779513082320876798154814105
 
 #define SERIAL  0x0
 #define DISPLAY 0x1
@@ -92,7 +72,7 @@ extern "C"{
 
 typedef unsigned int word;
 
-#define bit(b) (1 << (b))
+#define bit(b) (1UL << (b))
 
 typedef uint8_t boolean;
 typedef uint8_t byte;

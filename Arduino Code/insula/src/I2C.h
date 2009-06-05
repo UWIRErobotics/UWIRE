@@ -1,8 +1,9 @@
 #ifndef I2C_H_
 #define I2C_H_
 
-#include <stddef.h>					//for "NULL"
-#include "arduino/wiring.h"			//for data types
+#include <stddef.h>			//for "NULL"
+#include "arduino/wiring.h"	//for data types
+#include "arduino/Wire.h"	//for I2C
 
 
 class I2C {

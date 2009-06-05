@@ -59,7 +59,7 @@ _GPS_package* _GPS::parse(void)
 				char header[6] = {'$','G','P','R','M','C'};
 				if(buffer_in[index] != header[index])
 				{
-					Serial.println("Header mismatch!");
+					Serial0.println("Header mismatch!");
 					return NULL;
 				}
 				break;
@@ -76,7 +76,7 @@ _GPS_package* _GPS::parse(void)
 			{
 				if('A' != buffer_in[index])
 				{
-					Serial.println("Status invalid!");
+					Serial0.println("Status invalid!");
 					return NULL;
 				}
 				break;
@@ -93,7 +93,7 @@ _GPS_package* _GPS::parse(void)
 			{
 				if('N' != buffer_in[index])
 				{
-					Serial.println("Latitude heading incorrect!");
+					Serial0.println("Latitude heading incorrect!");
 					return NULL;
 				}
 				break;
@@ -110,7 +110,7 @@ _GPS_package* _GPS::parse(void)
 			{
 				if('W' != buffer_in[index])
 				{
-					Serial.println("Longitude heading incorrect!");
+					Serial0.println("Longitude heading incorrect!");
 					return NULL;
 				}
 				break;
@@ -304,7 +304,7 @@ void _GPS::calc_checksum(char *ptr)
  */
 void _GPS::send(char *ptr)
 {
-#define GPSout(x)	Serial3.print(x); Serial.print(x);	//include 'Serial.print' only for debugging
+#define GPSout(x)	Serial3.print(x); Serial0.print(x);	//include 'Serial.print' only for debugging
 
 //	print everything up to the checksum boundary
 	for(; *ptr != '*'; ptr++)

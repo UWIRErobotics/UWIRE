@@ -41,7 +41,7 @@ unsigned long  get          (data_types);
 inline void    send         (char *ptr, byte length)
 {	for(int i = 0; i < length; i++, ptr++)
 	{	Serial3.print(*ptr);
-		Serial.print (*ptr);}	//debugging only
+		Serial0.print (*ptr);}	//debugging only
 }
 
 inline void    query        (NMEA_types x)          {request(x,1,0,false);}

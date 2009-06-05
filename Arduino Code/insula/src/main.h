@@ -8,13 +8,12 @@
 //#include "I2C.h"
 
 
-volatile char console_in;
-
-
 /*****MAIN FUNCTIONS*****/
 void setup();
 void loop();
 int  main();
+
+byte CLI(char *);
 
 
 #endif /* MAIN_H_ */
