@@ -1,13 +1,13 @@
 extern "C"
 {
   #include <stdlib.h>
-  #include <string.h>
+
   #include <inttypes.h>
   #include "twi.h"
 }
 #include "Wire.h"
 
-// Initialize Class Variables //////////////////////////////////////////////////
+// Initialize Class Variables
 uint8_t* TwoWire::rxBuffer       = 0;
 uint8_t  TwoWire::rxBufferIndex  = 0;
 uint8_t  TwoWire::rxBufferLength = 0;
@@ -21,8 +21,6 @@ uint8_t  TwoWire::transmitting   = 0;
 void   (*TwoWire::user_onRequest)(void);
 void   (*TwoWire::user_onReceive)(int);
 
-// Constructors ////////////////////////////////////////////////////////////////
-TwoWire::TwoWire(){}
 
 // Public Methods //////////////////////////////////////////////////////////////
 void TwoWire::begin(void)
@@ -41,16 +39,11 @@ void TwoWire::begin(void)
 }
 
 void TwoWire::begin(uint8_t address)
-{
+{//act as a SLAVE on the bus
   twi_setAddress(address);
   twi_attachSlaveTxEvent(onRequestService);
   twi_attachSlaveRxEvent(onReceiveService);
   begin();
-}
-
-void TwoWire::begin(int address)
-{
-  begin((uint8_t)address);
 }
 
 uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity)
@@ -68,11 +61,6 @@ uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity)
   return read;
 }
 
-uint8_t TwoWire::requestFrom(int address, int quantity)
-{
-  return requestFrom((uint8_t)address, (uint8_t)quantity);
-}
-
 void TwoWire::beginTransmission(uint8_t address)
 {
   // indicate that we are transmitting
@@ -82,11 +70,6 @@ void TwoWire::beginTransmission(uint8_t address)
   // reset tx buffer iterator vars
   txBufferIndex = 0;
   txBufferLength = 0;
-}
-
-void TwoWire::beginTransmission(int address)
-{
-  beginTransmission((uint8_t)address);
 }
 
 uint8_t TwoWire::endTransmission(void)
@@ -124,6 +107,7 @@ void TwoWire::send(uint8_t data)
   }
 }
 
+
 // must be called in:
 // slave tx event callback
 // or after beginTransmission(address)
@@ -141,29 +125,6 @@ void TwoWire::send(uint8_t* data, uint8_t quantity)
   }
 }
 
-// must be called in:
-// slave tx event callback
-// or after beginTransmission(address)
-void TwoWire::send(char* data)
-{
-  send((uint8_t*)data, strlen(data));
-}
-
-// must be called in:
-// slave tx event callback
-// or after beginTransmission(address)
-void TwoWire::send(int data)
-{
-  send((uint8_t)data);
-}
-
-// must be called in:
-// slave rx event callback
-// or after requestFrom(address, numBytes)
-uint8_t TwoWire::available(void)
-{
-  return rxBufferLength - rxBufferIndex;
-}
 
 // must be called in:
 // slave rx event callback
@@ -182,6 +143,7 @@ uint8_t TwoWire::receive(void)
 
   return value;
 }
+
 
 // behind the scenes function that is called when data is received
 void TwoWire::onReceiveService(uint8_t* inBytes, int numBytes)
@@ -208,6 +170,7 @@ void TwoWire::onReceiveService(uint8_t* inBytes, int numBytes)
   user_onReceive(numBytes);
 }
 
+
 // behind the scenes function that is called when data is requested
 void TwoWire::onRequestService(void)
 {
@@ -223,11 +186,13 @@ void TwoWire::onRequestService(void)
   user_onRequest();
 }
 
+
 // sets function called on slave write
 void TwoWire::onReceive( void (*function)(int) )
 {
   user_onReceive = function;
 }
+
 
 // sets function called on slave read
 void TwoWire::onRequest( void (*function)(void) )
@@ -235,7 +200,8 @@ void TwoWire::onRequest( void (*function)(void) )
   user_onRequest = function;
 }
 
-// Preinstantiate Objects //////////////////////////////////////////////////////
 
-TwoWire Wire = TwoWire();
+
+// Preinstantiate Objects //////////////////////////////////////////////////////
+//TwoWire Wire = TwoWire();
 

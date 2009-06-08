@@ -5,7 +5,7 @@
 
 //#include "ArduinoLink.h"
 #include "GPS.h"
-//#include "I2C.h"
+#include "I2C.h"
 
 
 /*****MAIN FUNCTIONS*****/

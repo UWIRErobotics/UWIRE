@@ -5,8 +5,8 @@
 #include "wiring_private.h"
 #include "HardwareSerial.h"
 
-
 #define RX_BUFFER_SIZE 128
+
 
 struct ring_buffer
 {
@@ -20,6 +20,7 @@ ring_buffer rx_buffer1 = { { 0 }, 0, 0 };
 ring_buffer rx_buffer2 = { { 0 }, 0, 0 };
 ring_buffer rx_buffer3 = { { 0 }, 0, 0 };
 
+
 inline void store_char(unsigned char c, ring_buffer *rx_buffer)
 {
 	int i = (rx_buffer->head + 1) % RX_BUFFER_SIZE;
@@ -29,32 +30,6 @@ inline void store_char(unsigned char c, ring_buffer *rx_buffer)
 		rx_buffer->buffer[rx_buffer->head] = c;
 		rx_buffer->head = i;  }
 }
-
-/* SET SERIAL INTERRUPTS HERE (for now, just stores received value) */
-
-// console / debug
-SIGNAL(SIG_USART0_RECV){
-	unsigned char c = UDR0;
-	store_char(c, &rx_buffer0);
-}
-
-// arduino 'brain'
-SIGNAL(SIG_USART1_RECV){
-	unsigned char c = UDR1;
-	store_char(c, &rx_buffer1);
-}
-
-// GPS
-SIGNAL(SIG_USART2_RECV){
-	unsigned char c = UDR2;
-	store_char(c, &rx_buffer2);
-}
-
-SIGNAL(SIG_USART3_RECV){
-	unsigned char c = UDR3;
-	store_char(c, &rx_buffer3);
-}
-
 
 // Constructors ////////////////////////////////////////////////////////////////
 HardwareSerial::HardwareSerial(ring_buffer *rx_buffer,
@@ -125,9 +100,35 @@ void HardwareSerial::write(uint8_t c)
 	*_udr = c;
 }
 
+
 // Preinstantiate Objects //////////////////////////////////////////////////////
 HardwareSerial Serial0(&rx_buffer0, &UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UDR0, RXEN0, TXEN0, RXCIE0, UDRE0);
 HardwareSerial Serial1(&rx_buffer1, &UBRR1H, &UBRR1L, &UCSR1A, &UCSR1B, &UDR1, RXEN1, TXEN1, RXCIE1, UDRE1);
 HardwareSerial Serial2(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2);
 HardwareSerial Serial3(&rx_buffer3, &UBRR3H, &UBRR3L, &UCSR3A, &UCSR3B, &UDR3, RXEN3, TXEN3, RXCIE3, UDRE3);
 
+
+
+/* SET SERIAL INTERRUPTS HERE (for now, just stores received value) */
+// console / debug
+SIGNAL(SIG_USART0_RECV){
+	unsigned char c = UDR0;
+	store_char(c, &rx_buffer0);
+}
+
+// arduino 'brain'
+SIGNAL(SIG_USART1_RECV){
+	unsigned char c = UDR1;
+	store_char(c, &rx_buffer1);
+}
+
+// GPS
+SIGNAL(SIG_USART2_RECV){
+	unsigned char c = UDR2;
+	store_char(c, &rx_buffer2);
+}
+
+SIGNAL(SIG_USART3_RECV){
+	unsigned char c = UDR3;
+	store_char(c, &rx_buffer3);
+}

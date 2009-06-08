@@ -15,7 +15,8 @@ typedef struct {   // data [potentially] sent to brain; integers are better!
 }_GPS_package;
 
 
-class _GPS{
+class _GPS
+{
 public:
 	typedef enum {GGA = 0, GLL, GSA, GSV, RMC, VTG} NMEA_types;
 	typedef enum {time = 0, speed, course, latitude, longitude} data_types;

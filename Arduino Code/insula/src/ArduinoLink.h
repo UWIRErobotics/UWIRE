@@ -1,7 +1,10 @@
 #ifndef ARDUINOLINK_H_
 #define ARDUINOLINK_H_
 
-class ArduinoLink {
+#include "arduino/HardwareSerial.h"
+
+class ArduinoLink// : public HardwareSerial
+{
 public:
 	ArduinoLink();
 	~ArduinoLink();

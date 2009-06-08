@@ -1,10 +1,17 @@
 #include "main.h"
 
+byte sIndex_front = 0x00,
+     sIndex_left  = 0x00,
+     sIndex_right = 0x00;
 
 void setup()
 {
 	Serial0.begin(19200);   //user console
 	Serial0.println("Insular Cortex Console");
+
+	sIndex_front = Sonar.attach(0xE0);
+	//sIndex_left  = Sonar.attach(0xE0);
+	//sIndex_right = Sonar.attach(0xE0);
 }
 
 
@@ -15,8 +22,8 @@ void loop()
 
 	if(GPS.available() > 0)
 		Serial0.print(GPS.read());
-
 }
+
 
 byte CLI(char *msg)
 {
@@ -52,7 +59,6 @@ byte CLI(char *msg)
 
 	return 0;
 }
-
 
 
 int main(void)

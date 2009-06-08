@@ -2,7 +2,8 @@
 
 ArduinoLink Brain;
 
-ArduinoLink::ArduinoLink() {
+ArduinoLink::ArduinoLink()
+{
 	// TODO Auto-generated constructor stub
 
 }
