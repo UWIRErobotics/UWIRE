@@ -1,17 +1,14 @@
 #include "main.h"
 
-byte sIndex_front = 0x00,
-     sIndex_left  = 0x00,
-     sIndex_right = 0x00;
+byte sWest      = 0x71,
+     sNorthWest = 0x72,
+     sNorthEast = 0x74,
+     sEast      = 0x78;
 
 void setup()
 {
 	Serial0.begin(19200);   //user console
 	Serial0.println("Insular Cortex Console");
-
-	sIndex_front = Sonar.attach(0xE0);
-	//sIndex_left  = Sonar.attach(0xE0);
-	//sIndex_right = Sonar.attach(0xE0);
 }
 
 
