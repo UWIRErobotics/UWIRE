@@ -2,7 +2,6 @@
 #define HardwareSerial_h
 
 #include <inttypes.h>
-
 #include "Print.h"
 
 struct ring_buffer;
@@ -40,10 +39,12 @@ virtual void     write(uint8_t);
     uint8_t _udre;              //transmit data register empty
 };
 
+
+/*****************************/
 extern HardwareSerial Serial0;
 extern HardwareSerial Serial1;
 extern HardwareSerial Serial2;
 extern HardwareSerial Serial3;
+/*****************************/
 
 #endif
-

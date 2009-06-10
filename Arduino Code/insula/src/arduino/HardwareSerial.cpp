@@ -8,17 +8,11 @@
 #define RX_BUFFER_SIZE 128
 
 
-struct ring_buffer
-{
+struct ring_buffer{
 	unsigned char buffer[RX_BUFFER_SIZE];
 	int head;
 	int tail;
 };
-
-ring_buffer rx_buffer0 = { { 0 }, 0, 0 };
-ring_buffer rx_buffer1 = { { 0 }, 0, 0 };
-ring_buffer rx_buffer2 = { { 0 }, 0, 0 };
-ring_buffer rx_buffer3 = { { 0 }, 0, 0 };
 
 
 inline void store_char(unsigned char c, ring_buffer *rx_buffer)
@@ -102,6 +96,11 @@ void HardwareSerial::write(uint8_t c)
 
 
 // Preinstantiate Objects //////////////////////////////////////////////////////
+ring_buffer rx_buffer0 = { { 0 }, 0, 0 };
+ring_buffer rx_buffer1 = { { 0 }, 0, 0 };
+ring_buffer rx_buffer2 = { { 0 }, 0, 0 };
+ring_buffer rx_buffer3 = { { 0 }, 0, 0 };
+
 HardwareSerial Serial0(&rx_buffer0, &UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UDR0, RXEN0, TXEN0, RXCIE0, UDRE0);
 HardwareSerial Serial1(&rx_buffer1, &UBRR1H, &UBRR1L, &UCSR1A, &UCSR1B, &UDR1, RXEN1, TXEN1, RXCIE1, UDRE1);
 HardwareSerial Serial2(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2);

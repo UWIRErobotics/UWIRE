@@ -13,7 +13,8 @@
 
 
 
-boolean read_H_Packet( char *bin ) {
+boolean read_H_Packet( char *bin )
+{
   
   //bin = new char[28];
   
@@ -36,7 +37,12 @@ boolean read_H_Packet( char *bin ) {
 }
 
 
-boolean read_T_Packet( char *mx, char *my, char *x1_leftMost, char *y1_leftMost, char *x2_rightMost, char *y2_rightMost, char *numPixels, char *confidence ) {
+boolean read_T_Packet( char *mx,           char *my, 
+                       char *x1_leftMost,  char *y1_leftMost, 
+                       char *x2_rightMost, char *y2_rightMost, 
+                       char *numPixels, 
+                       char *confidence) 
+{
     
   char inByte = Serial.read();
   

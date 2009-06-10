@@ -2,12 +2,9 @@
 
 ArduinoLink Brain;
 
+
 ArduinoLink::ArduinoLink()
 {
-	// TODO Auto-generated constructor stub
+	Serial1.begin(19200);
 
-}
-
-ArduinoLink::~ArduinoLink() {
-	// TODO Auto-generated destructor stub
 }

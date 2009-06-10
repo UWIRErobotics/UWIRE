@@ -7,7 +7,8 @@ class ArduinoLink// : public HardwareSerial
 {
 public:
 	ArduinoLink();
-	~ArduinoLink();
+   ~ArduinoLink(){}
+	void send(uint8_t);
 };
 
 

@@ -1,24 +1,109 @@
 #include "main.h"
 
-byte sWest      = 0x71,
-     sNorthWest = 0x72,
-     sNorthEast = 0x74,
-     sEast      = 0x78;
+byte Sonar1 = 0x71,
+     Sonar2 = 0x72,
+     Sonar3 = 0x74,
+     Sonar4 = 0x78;
+
+byte count = 0x00;
+
+typedef union
+{
+	uint16_t container;
+	struct{
+		uint8_t high;
+		uint8_t low;
+	};
+}byte16;
+
 
 void setup()
 {
 	Serial0.begin(19200);   //user console
+	Serial1.begin(9600);	//cogzilla
+
 	Serial0.println("Insular Cortex Console");
 }
 
 
 void loop()
 {
-	if(Serial0.available() > 0)
-		CLI((char *) Serial0.read());
+	if(1 == count)
+	{
+		byte16 val;
+		val.container = Sonar.range(Sonar1);
 
-	if(GPS.available() > 0)
-		Serial0.print(GPS.read());
+		Serial0.print("0x");
+		Serial0.print(Sonar1, HEX);
+		Serial0.print(" : ");
+		Serial0.print((int) val.low);
+		Serial0.println((int) val.high);
+
+		Serial1.print(Sonar1);
+		Serial1.print((char) val.low);
+		Serial1.print((char) val.high);
+	}
+	else if(2 == count)
+	{
+		byte16 val;
+		val.container = Sonar.range(Sonar2);
+
+		Serial0.print("0x");
+		Serial0.print(Sonar2, HEX);
+		Serial0.print(" : ");
+		Serial0.print((int) val.low);
+		Serial0.println((int) val.high);
+
+		Serial1.print(Sonar2);
+		Serial1.print((char) val.low);
+		Serial1.print((char) val.high);
+	}
+	else if(3 == count)
+	{
+		byte16 val;
+		val.container = Sonar.range(Sonar3);
+
+		Serial0.print("0x");
+		Serial0.print(Sonar3, HEX);
+		Serial0.print(" : ");
+		Serial0.print((int) val.low);
+		Serial0.println((int) val.high);
+
+		Serial1.print(Sonar3);
+		Serial1.print((char) val.low);
+		Serial1.print((char) val.high);
+	}
+	else if(4 == count)
+	{
+		byte16 val;
+		val.container = Sonar.range(Sonar4);
+
+		Serial0.print("0x");
+		Serial0.print(Sonar4, HEX);
+		Serial0.print(" : ");
+		Serial0.print((int) val.low);
+		Serial0.println((int) val.high);
+
+		Serial1.print(Sonar4);
+		Serial1.print((char) val.low);
+		Serial1.print((char) val.high);
+	}
+	else if(5 == count)
+	{
+		Serial0.print("Sending that message: ");
+
+		char message[] = {'G','O','u','1','r','E','!', '\0'};
+		Serial1.print(0x00);
+		Serial1.print(message);
+		Serial0.print(message);
+		Serial0.println();
+	}
+
+	count++;
+	if(count == 6)	count = 0;
+
+	delay(1000);
+
 }
 
 
