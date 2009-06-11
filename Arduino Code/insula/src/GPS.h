@@ -45,11 +45,11 @@ inline void    send         (char *ptr, byte length)
 		Serial0.print (*ptr);}	//debugging only
 }
 
-inline void    query        (NMEA_types x)          {request(x,1,0,false);}
-inline void    stop_feed    (NMEA_types x)          {request(x,0,0,false);}
-inline void    start_feed   (NMEA_types x, byte y)  {request(x,0,y,false);}
-inline void    send         (void)                  {send(buffer_out, 25);}
-inline void    calc_checksum(void)                  {calc_checksum(buffer_out);}
+inline void    query        (NMEA_types x)                     {request(x,1,0,false);}
+inline void    stop_feed    (NMEA_types x)                     {request(x,0,0,false);}
+inline void    start_feed   (NMEA_types x, byte y, boolean z)  {request(x,0,y,z);}
+inline void    send         (void)                             {send(buffer_out, 25);}
+inline void    calc_checksum(void)                             {calc_checksum(buffer_out);}
 
 
 private:

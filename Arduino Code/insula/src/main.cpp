@@ -1,9 +1,9 @@
 #include "main.h"
 
-byte Sonar1 = 0x71,
-     Sonar2 = 0x72,
-     Sonar3 = 0x74,
-     Sonar4 = 0x78;
+#define Sonar1  0x71
+#define Sonar2  0x72
+#define Sonar3  0x74
+#define Sonar4  0x78
 
 byte count = 0x00;
 
@@ -28,6 +28,17 @@ void setup()
 
 void loop()
 {
+
+	if(GPS.available() > 0)
+		Serial0.print(GPS.read());
+
+	if(Serial0.available() > 0)
+	{
+		char read = Serial0.read();
+		CLI(&read);
+	}
+/*
+
 	if(1 == count)
 	{
 		byte16 val;
@@ -103,7 +114,7 @@ void loop()
 	if(count == 6)	count = 0;
 
 	delay(1000);
-
+*/
 }
 
 
@@ -117,6 +128,7 @@ byte CLI(char *msg)
 	Serial0.println(*msg);
 	Serial0.flush();	//ONLY RECEIVED 1 BYTE OMG!
 
+/************************* GPS *************************/
 	if     ('a' == *msg)	GPS.stop_feed(GPS.GGA);
 	else if('b' == *msg)	GPS.stop_feed(GPS.GLL);
 	else if('c' == *msg)	GPS.stop_feed(GPS.GSA);
@@ -124,14 +136,14 @@ byte CLI(char *msg)
 	else if('e' == *msg)	GPS.stop_feed(GPS.RMC);
 	else if('f' == *msg)	GPS.stop_feed(GPS.VTG);
 
-	else if('g' == *msg)	GPS.start_feed(GPS.GGA, 1);
-	else if('h' == *msg)	GPS.start_feed(GPS.GLL, 1);
-	else if('i' == *msg)	GPS.start_feed(GPS.GSA, 1);
-	else if('j' == *msg)	GPS.start_feed(GPS.GSV, 1);
-	else if('k' == *msg)	GPS.start_feed(GPS.RMC, 1);
-	else if('l' == *msg)	GPS.start_feed(GPS.VTG, 1);
+	else if('g' == *msg)	GPS.start_feed(GPS.GGA, 1, true);
+	else if('h' == *msg)	GPS.start_feed(GPS.GLL, 1, true);
+	else if('i' == *msg)	GPS.start_feed(GPS.GSA, 1, true);
+	else if('j' == *msg)	GPS.start_feed(GPS.GSV, 1, true);
+	else if('k' == *msg)	GPS.start_feed(GPS.RMC, 1, true);
+	else if('l' == *msg)	GPS.start_feed(GPS.VTG, 1, true);
 
-//	    void set_param(long baud, byte data_bits, boolean stop, byte parity)
+//  void set_param(long baud, byte data_bits, boolean stop, byte parity)
 	else if('m' == *msg)	GPS.set_param(1200,  8, true, 0);
 	else if('n' == *msg)	GPS.set_param(2400,  8, true, 0);
 	else if('o' == *msg)	GPS.set_param(4800,  8, true, 0);
@@ -139,6 +151,8 @@ byte CLI(char *msg)
 	else if('q' == *msg)	GPS.set_param(19200, 8, true, 0);
 	else if('r' == *msg)	GPS.set_param(38400, 8, true, 0);
 
+
+/************************* I2C *************************/
 	return 0;
 }
 

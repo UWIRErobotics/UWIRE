@@ -1,7 +1,7 @@
 #include "GPS.h"
 
 /** OBJECT DECLARATION **/
-     _GPS GPS(4800);
+     _GPS GPS(19200);
 /**************************/
 
 _GPS::_GPS(long baud)
