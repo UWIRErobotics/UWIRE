@@ -1,0 +1,238 @@
+Femto OS v 0.88 - Copyright (C) 2008  Ruud Vlaming
+
+This file is part of the Femto OS distribution.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, version 3 of the License.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Please note that, due to the GPLv3 license, for application of this
+work and/or combined work in embedded systems special obligations apply.
+If these are not to you liking, please know the Femto OS is dual
+licensed. A commercial license and support are available.
+See http://www.femtoos.org/ for details.
+
+ENCLOSED PLEASE FIND
+
+- License GPLv3
+- Install scripts for various environments
+- Femto OS code
+- examples
+- patches for the tool chain
+- schematics for hardware
+- binaries for all ports
+- eclipse project files
+
+If anything is missing or something else is wrong,
+please have a look at the forum or post your question
+there. More information can be obtained from
+  http://www.femtoos.org/
+You can also email me: info@femtoos.org
+
+
+GETTING STARTED:
+
+In any case you need a tool chain. If you already have your own, thats
+fine, just copy the C files in your environment. Code is only tested for
+the tool chain as installed by the script however. See below how this
+can be installed. The script installs a gcc version 4.3.3 with fully
+patched avr.c backend. These patches are required.
+
+The most easy start is just flashing the binaries as delivered in the 
+FemtoOS_0.88/MainCode/binaries directory. These are raw files and can be
+flashed without much preparation. Only thing you have to do is make sure
+the fuses are set for an internal clock running 8MHz. Use whatever tool
+you like to flash the binaries to your device (avrdude for example).
+
+For now we assume you want to install the toolchain. It works in its
+own directory only so you can use this aside from you already present
+toolchain if you wish. Although there are little differences for the
+toolchain itself between the different platforms, there is a preparation.
+
+
+WINDOWS:
+
+Installing on windows requires a cygwin environment. Admitted, there are
+other ways, but this is what i used. Download the latest from the web:
+http://www.cygwin.com/ This is probably a good idea anyway, since it
+also updates your old cygwin version.
+Note that in addition to the default package you need at least
+  automake
+  binutils
+  bison
+  flex
+  gcc-core
+  gcc-g++
+  libtool
+  make
+  patch
+  wget
+packages. These must manually (!!) be selected in the tool. Best is to check
+wether the install succeeded by typing those in commands in the bash.
+You can also select a full download, which may end above the 1GB!
+An other point to keep in mind is that you must select a mirror in the
+setup process, but not all mirrors install the same tools. 
+Here you can get useful tips when you have troubles.
+  http://www.nongnu.org/avr-libc/user-manual/install_tools.html
+When installing using cygwin, make sure you have you path not
+directing to some older version of WinAVR or so, the script will not run.
+Probably, you must manually and c:\cygwin\bin to your path, at least check.
+
+
+MAC:
+
+I assume you have the most recent version Mac OS X 10.5 (Leopard), earlier
+version may or may not work. Standard tools for making and building C programs
+are not present, thus you might need to install these. The best way to do this
+is to instal Xcode. A bit bulky in relation to what we need (1GB), but good stuff.
+Further, you need wget, libtool etc and these are ... not installed on your Mac.
+The best way to install it is to first install Darwin ports.
+  http://darwinports.com/
+After that install wget using the instructions on 
+  http://wget.darwinports.com/
+Be patient while it is installing, it can take really a while.
+Again it is a good idea to test if the necessary components are present
+by typing them into a terminal. Install other missing packages the same way.
+
+
+LINUX:
+
+There does not exists something like "linux". There are so many different flavors
+that i don't know where to start. Fortunately, most of them have gcc, make etc
+installed per default, and otherwise, you will probably know how to get these
+in your machine. Having said that, you can run the scripts "out of the box"
+when using the gentoo, and under ubuntu you may have to install some extra
+packages (do that on beforehand, if you don't error may occur that seem
+not related to absent packages, thanks to Carsten Foss <tp@luna.dyndns.dk>)
+Ubuntu:
+  sudo apt-get install build-essential automake autoconf libncurses5-dev texinfo texi2html
+  sudo apt-get install libcwidget-dev tcl8.4-dev tk8.4-dev libx11-dev
+  sudo apt-get install binutils-dev
+  sudo apt-get install bison flex
+  sudo apt-get install libusb-0.1-4 libusb-dev
+(if some of these installs fail, your ubuntu is not uptodate, fix that first)
+
+
+INSTALLING THE TOOLCHAIN
+
+Commands are done for windows, linux and Mac alike, under windows make sure
+you run from within the cygwin bash. You can remotely use X11 under the Mac.
+Prepare your machine as required 
+
+The script builds the cross-compiler for you, including the required gmp and mpfr
+libraries. Maybe it is best to first get more info with (From FemtoOS_0.88 directory):
+
+ ./Install_Scripts/install_toolchain --help
+
+and try if all the tools you need are installed on your system:
+
+ ./Install_Scripts/install_toolchain --test
+
+If all is well, call the script you need:
+
+on cywin:   ./Install_Scripts/install_toolchain  --slow
+on linux:   ./Install_Scripts/install_toolchain
+on mac:     ./Install_Scripts/install_toolchain
+
+
+The script may take a considerable amount of time, depending on the hardware,
+it may take even more than an hour under cygwin. If the script fails (likely) then
+you may correct the error (probably you need to add some system dependant option
+somewhere) and restart it. It continues at the point of error (to the best of its
+knowledge).
+
+If the script will be a success is the result of many environment related factors
+and most of them are beyond my control. You need for example have the proper
+GCC installed just to build the cross-compiler.
+If you want to restart the script from the beginning, use the clean option first.
+
+ ./Install_Scripts/install_toolchain --clean
+
+This may be called after a succesfull toolchain install also, to free-up some
+space. The installed execuables are left alone, as are the downloads.
+Please note that installing tool chains is always a tricky business. What works
+on one machine, may not work on another. Please  share your experiences with
+me, so we can improve on this.
+
+
+INSTALLING ALL EXAMPLES
+
+Commands are done for windows, linux and Mac alike, under windows make sure
+you run from within the bash. Again, make sure you are in the FemtoOS_0.88
+directory and call the script you need:
+
+cywin:    ./Install_Scripts/install_workspace copy
+linux:    ./Install_Scripts/install_workspace
+macbook:  ./Install_Scripts/install_workspace 
+
+
+The cygwin option 'copy' is to make sure the workspace does not contain windows
+shortcuts. The point is, Eclipse cannot handle them. The disadvantage being
+a whole lot of copies. (Note: NTFS junctions are NO alternative.)
+
+
+COMPILING
+
+At this point we can try to compile something with (all versions)
+
+  cd IDE
+ ./script/compile Bare atmega8  compact
+
+which should give
+
+  text    data     bss     dec     hex    device      project
+   300       0      12     312     138    atmega8     Bare
+
+Now you have also deleted all precompiled raw binaries, so thats why
+you should have tried them first. But you can regenerate them with
+
+ ./script/compile all cross compact 
+
+Get more options with:
+
+ ./script/compile --help
+
+
+ECLIPSE
+
+The projects in the workspace just generated can be imported into
+eclipse (Ganymede, CDT version). At eclipse startup point to the
+generated workspace directory. Then switch off automatic
+build first:
+
+  Project | ( ) Build Automatically  
+
+Subsequently only thing to do is select in on the workbench and import the projects
+
+  File|import|General|Existing projects into Workspace
+
+All projectssettings are allready correct (compiler options, calling etc)  but
+you need to have proper tools set to be able to compile (make etc),
+but i assume that will not be a problem. Make sure you choose the 'release'
+setting and not the 'debug'.
+
+
+QUALITY ASSURANCE
+
+Before releasing a new package i test the demos in several ways.
+For me the main development targets are the attiny861 and the atmega328p.
+I test all demos on these devices thoroughly, both the standard and the
+optimized versions. For all other devices i test both versions shortly,
+i let them run for one minute or so. I only test under Linux using the
+toolchain in the distribution. 
+
+See the website for a more elaborate discussion.
+
+
+Have great fun!
+Ruud Vlaming
+
+

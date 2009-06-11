@@ -1,0 +1,990 @@
+Fri Feb  6 23:39:25 CET 2009
+    310	      0	     10	    320	    140	   attiny24    Bare
+    314	      0	     10	    324	    144	   attiny44    Bare
+    314	      0	     10	    324	    144	   attiny84    Bare
+    312	      0	     10	    322	    142	   attiny25    Bare
+    316	      0	     10	    326	    146	   attiny45    Bare
+    316	      0	     10	    326	    146	   attiny85    Bare
+    308	      0	     10	    318	    13e	   attiny261   Bare
+    312	      0	     10	    322	    142	   attiny461   Bare
+    312	      0	     10	    322	    142	   attiny861   Bare
+    300	      0	     10	    310	    136	   atmega8     Bare
+    342	      0	     10	    352	    160	   atmega16    Bare
+    306	      0	     10	    316	    13c	   atmega32    Bare
+    326	      0	     10	    336	    150	   atmega64    Bare
+    332	      0	     10	    342	    156	   atmega128   Bare
+    368	      0	     10	    378	    17a	   atmega640   Bare
+    368	      0	     10	    378	    17a	   atmega1280  Bare
+    368	      0	     10	    378	    17a	   atmega1281  Bare
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+    374	      0	     14	    388	    184	   atmega2560  Bare
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+    374	      0	     14	    388	    184	   atmega2561  Bare
+    338	      0	     10	    348	    15c	   atmega48    Bare
+    338	      0	     10	    348	    15c	   atmega88    Bare
+    344	      0	     10	    354	    162	   atmega168   Bare
+    338	      0	     10	    348	    15c	   atmega48p   Bare
+    338	      0	     10	    348	    15c	   atmega88p   Bare
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestBare.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+    344	      0	     10	    354	    162	   atmega168p  Bare
+    344	      0	     10	    354	    162	   atmega328p  Bare
+    348	      0	     10	    358	    166	   atmega164p  Bare
+    348	      0	     10	    358	    166	   atmega324p  Bare
+    348	      0	     10	    358	    166	   atmega644p  Bare
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestBare.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+    348	      0	     10	    358	    166	   atmega1284p Bare
+    348	      0	     10	    358	    166	   atmega644   Bare
+    610	      0	     29	    639	    27f	   attiny24    Minimal
+    614	      0	     29	    643	    283	   attiny44    Minimal
+    614	      0	     29	    643	    283	   attiny84    Minimal
+    612	      0	     29	    641	    281	   attiny25    Minimal
+    616	      0	     29	    645	    285	   attiny45    Minimal
+    616	      0	     29	    645	    285	   attiny85    Minimal
+    608	      0	     29	    637	    27d	   attiny261   Minimal
+    612	      0	     29	    641	    281	   attiny461   Minimal
+    612	      0	     29	    641	    281	   attiny861   Minimal
+    600	      0	     29	    629	    275	   atmega8     Minimal
+    642	      0	     29	    671	    29f	   atmega16    Minimal
+    606	      0	     29	    635	    27b	   atmega32    Minimal
+    626	      0	     29	    655	    28f	   atmega64    Minimal
+    634	      0	     29	    663	    297	   atmega128   Minimal
+    674	      0	     29	    703	    2bf	   atmega640   Minimal
+    674	      0	     29	    703	    2bf	   atmega1280  Minimal
+    674	      0	     29	    703	    2bf	   atmega1281  Minimal
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+    676	      0	     41	    717	    2cd	   atmega2560  Minimal
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+    676	      0	     41	    717	    2cd	   atmega2561  Minimal
+    644	      0	     29	    673	    2a1	   atmega48    Minimal
+    644	      0	     29	    673	    2a1	   atmega88    Minimal
+    650	      0	     29	    679	    2a7	   atmega168   Minimal
+    644	      0	     29	    673	    2a1	   atmega48p   Minimal
+    644	      0	     29	    673	    2a1	   atmega88p   Minimal
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestMinimal.c:27:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+    650	      0	     29	    679	    2a7	   atmega168p  Minimal
+    650	      0	     29	    679	    2a7	   atmega328p  Minimal
+    654	      0	     29	    683	    2ab	   atmega164p  Minimal
+    654	      0	     29	    683	    2ab	   atmega324p  Minimal
+    654	      0	     29	    683	    2ab	   atmega644p  Minimal
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestMinimal.c:27:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+    654	      0	     29	    683	    2ab	   atmega1284p Minimal
+    654	      0	     29	    683	    2ab	   atmega644   Minimal
+    910	      0	     74	    984	    3d8	   attiny24    FlashLeds
+    914	      0	     74	    988	    3dc	   attiny44    FlashLeds
+    914	      0	     74	    988	    3dc	   attiny84    FlashLeds
+    912	      0	     74	    986	    3da	   attiny25    FlashLeds
+    916	      0	     74	    990	    3de	   attiny45    FlashLeds
+    916	      0	     74	    990	    3de	   attiny85    FlashLeds
+    908	      0	     74	    982	    3d6	   attiny261   FlashLeds
+    912	      0	     74	    986	    3da	   attiny461   FlashLeds
+    912	      0	     74	    986	    3da	   attiny861   FlashLeds
+    900	      0	     74	    974	    3ce	   atmega8     FlashLeds
+    942	      0	     74	   1016	    3f8	   atmega16    FlashLeds
+    906	      0	     74	    980	    3d4	   atmega32    FlashLeds
+    926	      0	     74	   1000	    3e8	   atmega64    FlashLeds
+    934	      0	     74	   1008	    3f0	   atmega128   FlashLeds
+    974	      0	     74	   1048	    418	   atmega640   FlashLeds
+    974	      0	     74	   1048	    418	   atmega1280  FlashLeds
+    974	      0	     74	   1048	    418	   atmega1281  FlashLeds
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+    982	      0	     94	   1076	    434	   atmega2560  FlashLeds
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+    982	      0	     94	   1076	    434	   atmega2561  FlashLeds
+    944	      0	     74	   1018	    3fa	   atmega48    FlashLeds
+    944	      0	     74	   1018	    3fa	   atmega88    FlashLeds
+    950	      0	     74	   1024	    400	   atmega168   FlashLeds
+    944	      0	     74	   1018	    3fa	   atmega48p   FlashLeds
+    944	      0	     74	   1018	    3fa	   atmega88p   FlashLeds
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestFlashLeds.c:27:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+    950	      0	     74	   1024	    400	   atmega168p  FlashLeds
+    950	      0	     74	   1024	    400	   atmega328p  FlashLeds
+    954	      0	     74	   1028	    404	   atmega164p  FlashLeds
+    954	      0	     74	   1028	    404	   atmega324p  FlashLeds
+    954	      0	     74	   1028	    404	   atmega644p  FlashLeds
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestFlashLeds.c:27:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+    954	      0	     74	   1028	    404	   atmega1284p FlashLeds
+    954	      0	     74	   1028	    404	   atmega644   FlashLeds
+  >size       0       0       0       0    attiny24    Watchdog
+   1830	      0	    185	   2015	    7df	   attiny44    Watchdog
+   1830	      0	    185	   2015	    7df	   attiny84    Watchdog
+  >size       0       0       0       0    attiny25    Watchdog
+   1832	      0	    185	   2017	    7e1	   attiny45    Watchdog
+   1832	      0	    185	   2017	    7e1	   attiny85    Watchdog
+  >size       0       0       0       0    attiny261   Watchdog
+   1828	      0	    185	   2013	    7dd	   attiny461   Watchdog
+   1828	      0	    185	   2013	    7dd	   attiny861   Watchdog
+   1818	      0	    185	   2003	    7d3	   atmega8     Watchdog
+   1860	      0	    185	   2045	    7fd	   atmega16    Watchdog
+   1824	      0	    185	   2009	    7d9	   atmega32    Watchdog
+   1844	      0	    185	   2029	    7ed	   atmega64    Watchdog
+   1852	      0	    185	   2037	    7f5	   atmega128   Watchdog
+   1890	      0	    185	   2075	    81b	   atmega640   Watchdog
+   1890	      0	    185	   2075	    81b	   atmega1280  Watchdog
+   1890	      0	    185	   2075	    81b	   atmega1281  Watchdog
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1898	      0	    210	   2108	    83c	   atmega2560  Watchdog
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1898	      0	    210	   2108	    83c	   atmega2561  Watchdog
+   1860	      0	    185	   2045	    7fd	   atmega48    Watchdog
+   1860	      0	    185	   2045	    7fd	   atmega88    Watchdog
+   1866	      0	    185	   2051	    803	   atmega168   Watchdog
+   1860	      0	    185	   2045	    7fd	   atmega48p   Watchdog
+   1860	      0	    185	   2045	    7fd	   atmega88p   Watchdog
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestWatchdog.c:27:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+   1866	      0	    185	   2051	    803	   atmega168p  Watchdog
+   1866	      0	    185	   2051	    803	   atmega328p  Watchdog
+   1870	      0	    185	   2055	    807	   atmega164p  Watchdog
+   1870	      0	    185	   2055	    807	   atmega324p  Watchdog
+   1870	      0	    185	   2055	    807	   atmega644p  Watchdog
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestWatchdog.c:27:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+   1870	      0	    185	   2055	    807	   atmega1284p Watchdog
+   1870	      0	    185	   2055	    807	   atmega644   Watchdog
+  >size       0       0       0       0    attiny24    Rendezvous
+   1388	      0	    210	   1598	    63e	   attiny44    Rendezvous
+   1388	      0	    210	   1598	    63e	   attiny84    Rendezvous
+  >size       0       0       0       0    attiny25    Rendezvous
+   1390	      0	    210	   1600	    640	   attiny45    Rendezvous
+   1390	      0	    210	   1600	    640	   attiny85    Rendezvous
+  >size       0       0       0       0    attiny261   Rendezvous
+   1386	      0	    210	   1596	    63c	   attiny461   Rendezvous
+   1386	      0	    210	   1596	    63c	   attiny861   Rendezvous
+   1374	      0	    210	   1584	    630	   atmega8     Rendezvous
+   1416	      0	    210	   1626	    65a	   atmega16    Rendezvous
+   1380	      0	    210	   1590	    636	   atmega32    Rendezvous
+   1400	      0	    210	   1610	    64a	   atmega64    Rendezvous
+   1400	      0	    210	   1610	    64a	   atmega128   Rendezvous
+   1440	      0	    210	   1650	    672	   atmega640   Rendezvous
+   1440	      0	    210	   1650	    672	   atmega1280  Rendezvous
+   1440	      0	    210	   1650	    672	   atmega1281  Rendezvous
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1448	      0	    210	   1658	    67a	   atmega2560  Rendezvous
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1448	      0	    210	   1658	    67a	   atmega2561  Rendezvous
+   1410	      0	    210	   1620	    654	   atmega48    Rendezvous
+   1410	      0	    210	   1620	    654	   atmega88    Rendezvous
+   1416	      0	    210	   1626	    65a	   atmega168   Rendezvous
+   1410	      0	    210	   1620	    654	   atmega48p   Rendezvous
+   1410	      0	    210	   1620	    654	   atmega88p   Rendezvous
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestRendezvous.c:27:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+   1416	      0	    210	   1626	    65a	   atmega168p  Rendezvous
+   1416	      0	    210	   1626	    65a	   atmega328p  Rendezvous
+   1420	      0	    210	   1630	    65e	   atmega164p  Rendezvous
+   1420	      0	    210	   1630	    65e	   atmega324p  Rendezvous
+   1420	      0	    210	   1630	    65e	   atmega644p  Rendezvous
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestRendezvous.c:27:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+In file included from ../include/femtoos_constants.h:165../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+   1420	      0	    210	   1630	    65e	   atmega1284p Rendezvous
+   1420	      0	    210	   1630	    65e	   atmega644   Rendezvous
+   1896	      0	    116	   2012	    7dc	   attiny24    Queus
+   1900	      0	    116	   2016	    7e0	   attiny44    Queus
+   1900	      0	    116	   2016	    7e0	   attiny84    Queus
+   1898	      0	    116	   2014	    7de	   attiny25    Queus
+   1902	      0	    116	   2018	    7e2	   attiny45    Queus
+   1902	      0	    116	   2018	    7e2	   attiny85    Queus
+   1894	      0	    116	   2010	    7da	   attiny261   Queus
+   1898	      0	    116	   2014	    7de	   attiny461   Queus
+   1898	      0	    116	   2014	    7de	   attiny861   Queus
+   1886	      0	    116	   2002	    7d2	   atmega8     Queus
+   1928	      0	    116	   2044	    7fc	   atmega16    Queus
+   1892	      0	    116	   2008	    7d8	   atmega32    Queus
+   1912	      0	    116	   2028	    7ec	   atmega64    Queus
+   1920	      0	    116	   2036	    7f4	   atmega128   Queus
+   1960	      0	    116	   2076	    81c	   atmega640   Queus
+   1960	      0	    116	   2076	    81c	   atmega1280  Queus
+   1960	      0	    116	   2076	    81c	   atmega1281  Queus
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1956	      0	    116	   2072	    818	   atmega2560  Queus
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1956	      0	    116	   2072	    818	   atmega2561  Queus
+   1930	      0	    116	   2046	    7fe	   atmega48    Queus
+   1930	      0	    116	   2046	    7fe	   atmega88    Queus
+   1936	      0	    116	   2052	    804	   atmega168   Queus
+   1930	      0	    116	   2046	    7fe	   atmega48p   Queus
+   1930	      0	    116	   2046	    7fe	   atmega88p   Queus
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestQueus.c:27:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+   1936	      0	    116	   2052	    804	   atmega168p  Queus
+   1936	      0	    116	   2052	    804	   atmega328p  Queus
+   1940	      0	    116	   2056	    808	   atmega164p  Queus
+   1940	      0	    116	   2056	    808	   atmega324p  Queus
+   1940	      0	    116	   2056	    808	   atmega644p  Queus
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestQueus.c:27:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+   1940	      0	    116	   2056	    808	   atmega1284p Queus
+   1940	      0	    116	   2056	    808	   atmega644   Queus
+   1254	      0	     76	   1330	    532	   attiny24    Sleep
+   1258	      0	     76	   1334	    536	   attiny44    Sleep
+   1258	      0	     76	   1334	    536	   attiny84    Sleep
+   1256	      0	     76	   1332	    534	   attiny25    Sleep
+   1260	      0	     76	   1336	    538	   attiny45    Sleep
+   1260	      0	     76	   1336	    538	   attiny85    Sleep
+   1252	      0	     76	   1328	    530	   attiny261   Sleep
+   1256	      0	     76	   1332	    534	   attiny461   Sleep
+   1256	      0	     76	   1332	    534	   attiny861   Sleep
+   1064	      0	     76	   1140	    474	   atmega8     Sleep
+   1106	      0	     76	   1182	    49e	   atmega16    Sleep
+   1070	      0	     76	   1146	    47a	   atmega32    Sleep
+   1090	      0	     76	   1166	    48e	   atmega64    Sleep
+   1100	      0	     76	   1176	    498	   atmega128   Sleep
+   1330	      0	     76	   1406	    57e	   atmega640   Sleep
+   1330	      0	     76	   1406	    57e	   atmega1280  Sleep
+   1330	      0	     76	   1406	    57e	   atmega1281  Sleep
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1330	      0	     76	   1406	    57e	   atmega2560  Sleep
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1330	      0	     76	   1406	    57e	   atmega2561  Sleep
+   1298	      0	     76	   1374	    55e	   atmega48    Sleep
+   1298	      0	     76	   1374	    55e	   atmega88    Sleep
+   1306	      0	     76	   1382	    566	   atmega168   Sleep
+   1298	      0	     76	   1374	    55e	   atmega48p   Sleep
+   1298	      0	     76	   1374	    55e	   atmega88p   Sleep
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestSleep.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+In file included from ../include/femtoos_constants.h:165../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+   1306	      0	     76	   1382	    566	   atmega168p  Sleep
+   1306	      0	     76	   1382	    566	   atmega328p  Sleep
+   1310	      0	     76	   1386	    56a	   atmega164p  Sleep
+   1310	      0	     76	   1386	    56a	   atmega324p  Sleep
+   1310	      0	     76	   1386	    56a	   atmega644p  Sleep
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestSleep.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+   1310	      0	     76	   1386	    56a	   atmega1284p Sleep
+   1310	      0	     76	   1386	    56a	   atmega644   Sleep
+    792	      0	     35	    827	    33b	   attiny24    Hooks
+    796	      0	     35	    831	    33f	   attiny44    Hooks
+    796	      0	     35	    831	    33f	   attiny84    Hooks
+    794	      0	     35	    829	    33d	   attiny25    Hooks
+    798	      0	     35	    833	    341	   attiny45    Hooks
+    798	      0	     35	    833	    341	   attiny85    Hooks
+    790	      0	     35	    825	    339	   attiny261   Hooks
+    794	      0	     35	    829	    33d	   attiny461   Hooks
+    794	      0	     35	    829	    33d	   attiny861   Hooks
+    782	      0	     35	    817	    331	   atmega8     Hooks
+    824	      0	     35	    859	    35b	   atmega16    Hooks
+    788	      0	     35	    823	    337	   atmega32    Hooks
+    808	      0	     35	    843	    34b	   atmega64    Hooks
+    816	      0	     35	    851	    353	   atmega128   Hooks
+    856	      0	     35	    891	    37b	   atmega640   Hooks
+    856	      0	     35	    891	    37b	   atmega1280  Hooks
+    856	      0	     35	    891	    37b	   atmega1281  Hooks
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+    866	      0	     35	    901	    385	   atmega2560  Hooks
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+    866	      0	     35	    901	    385	   atmega2561  Hooks
+    826	      0	     35	    861	    35d	   atmega48    Hooks
+    826	      0	     35	    861	    35d	   atmega88    Hooks
+    832	      0	     35	    867	    363	   atmega168   Hooks
+    826	      0	     35	    861	    35d	   atmega48p   Hooks
+    826	      0	     35	    861	    35d	   atmega88p   Hooks
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestHooks.c:27:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+    832	      0	     35	    867	    363	   atmega168p  Hooks
+    832	      0	     35	    867	    363	   atmega328p  Hooks
+    836	      0	     35	    871	    367	   atmega164p  Hooks
+    836	      0	     35	    871	    367	   atmega324p  Hooks
+    836	      0	     35	    871	    367	   atmega644p  Hooks
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestHooks.c:27:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+    836	      0	     35	    871	    367	   atmega1284p Hooks
+    836	      0	     35	    871	    367	   atmega644   Hooks
+  >size       0       0       0       0    attiny24    Interrupt
+  >size       0       0       0       0    attiny44    Interrupt
+   2160	      0	    259	   2419	    973	   attiny84    Interrupt
+  >size       0       0       0       0    attiny25    Interrupt
+  >size       0       0       0       0    attiny45    Interrupt
+   2156	      0	    259	   2415	    96f	   attiny85    Interrupt
+  >size       0       0       0       0    attiny261   Interrupt
+  >size       0       0       0       0    attiny461   Interrupt
+   2164	      0	    259	   2423	    977	   attiny861   Interrupt
+   2152	      0	    259	   2411	    96b	   atmega8     Interrupt
+   2200	      0	    259	   2459	    99b	   atmega16    Interrupt
+   2200	      0	    259	   2459	    99b	   atmega32    Interrupt
+   2256	      0	    259	   2515	    9d3	   atmega64    Interrupt
+   2284	      0	    259	   2543	    9ef	   atmega128   Interrupt
+   2412	      0	    259	   2671	    a6f	   atmega640   Interrupt
+   2418	      0	    259	   2677	    a75	   atmega1280  Interrupt
+   2394	      0	    259	   2653	    a5d	   atmega1281  Interrupt
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   2430	      0	    259	   2689	    a81	   atmega2560  Interrupt
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   2406	      0	    259	   2665	    a69	   atmega2561  Interrupt
+   2236	      0	    259	   2495	    9bf	   atmega48    Interrupt
+   2236	      0	    259	   2495	    9bf	   atmega88    Interrupt
+   2288	      0	    259	   2547	    9f3	   atmega168   Interrupt
+   2236	      0	    259	   2495	    9bf	   atmega48p   Interrupt
+   2236	      0	    259	   2495	    9bf	   atmega88p   Interrupt
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestInterrupt.c:29:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+   2288	      0	    259	   2547	    9f3	   atmega168p  Interrupt
+   2288	      0	    259	   2547	    9f3	   atmega328p  Interrupt
+   2308	      0	    259	   2567	    a07	   atmega164p  Interrupt
+   2308	      0	    259	   2567	    a07	   atmega324p  Interrupt
+   2308	      0	    259	   2567	    a07	   atmega644p  Interrupt
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestInterrupt.c:29:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+   2330	      0	    259	   2589	    a1d	   atmega1284p Interrupt
+   2296	      0	    259	   2555	    9fb	   atmega644   Interrupt
+  ~port       0       0       0       0    attiny24    Shell
+  ~port       0       0       0       0    attiny44    Shell
+  ~port       0       0       0       0    attiny84    Shell
+  ~port       0       0       0       0    attiny25    Shell
+  ~port       0       0       0       0    attiny45    Shell
+  ~port       0       0       0       0    attiny85    Shell
+  ~port       0       0       0       0    attiny261   Shell
+  ~port       0       0       0       0    attiny461   Shell
+../src/code_TestShell.c:52: warning: 'crcValue' defined but not used
+   6906	      0	    511	   7417	   1cf9	   attiny861   Shell
+  ~port       0       0       0       0    atmega8     Shell
+  ~port       0       0       0       0    atmega16    Shell
+  ~port       0       0       0       0    atmega32    Shell
+  ~port       0       0       0       0    atmega64    Shell
+  ~port       0       0       0       0    atmega128   Shell
+  ~port       0       0       0       0    atmega640   Shell
+  ~port       0       0       0       0    atmega1280  Shell
+  ~port       0       0       0       0    atmega1281  Shell
+  ~port       0       0       0       0    atmega2560  Shell
+  ~port       0       0       0       0    atmega2561  Shell
+  ~port       0       0       0       0    atmega48    Shell
+  ~port       0       0       0       0    atmega88    Shell
+  ~port       0       0       0       0    atmega168   Shell
+  ~port       0       0       0       0    atmega48p   Shell
+  ~port       0       0       0       0    atmega88p   Shell
+  ~port       0       0       0       0    atmega168p  Shell
+  ~port       0       0       0       0    atmega328p  Shell
+  ~port       0       0       0       0    atmega164p  Shell
+  ~port       0       0       0       0    atmega324p  Shell
+  ~port       0       0       0       0    atmega644p  Shell
+  ~port       0       0       0       0    atmega1284p Shell
+  ~port       0       0       0       0    atmega644   Shell
+  >size       0       0       0       0    attiny24    Passon
+  >size       0       0       0       0    attiny44    Passon
+   1950	      0	    293	   2243	    8c3	   attiny84    Passon
+  >size       0       0       0       0    attiny25    Passon
+  >size       0       0       0       0    attiny45    Passon
+   1952	      0	    293	   2245	    8c5	   attiny85    Passon
+  >size       0       0       0       0    attiny261   Passon
+  >size       0       0       0       0    attiny461   Passon
+   1948	      0	    293	   2241	    8c1	   attiny861   Passon
+   1936	      0	    293	   2229	    8b5	   atmega8     Passon
+   1978	      0	    293	   2271	    8df	   atmega16    Passon
+   1942	      0	    293	   2235	    8bb	   atmega32    Passon
+   1962	      0	    293	   2255	    8cf	   atmega64    Passon
+   1962	      0	    293	   2255	    8cf	   atmega128   Passon
+   2002	      0	    293	   2295	    8f7	   atmega640   Passon
+   2002	      0	    293	   2295	    8f7	   atmega1280  Passon
+   2002	      0	    293	   2295	    8f7	   atmega1281  Passon
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1998	      0	    293	   2291	    8f3	   atmega2560  Passon
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   1998	      0	    293	   2291	    8f3	   atmega2561  Passon
+   1972	      0	    293	   2265	    8d9	   atmega48    Passon
+   1972	      0	    293	   2265	    8d9	   atmega88    Passon
+   1978	      0	    293	   2271	    8df	   atmega168   Passon
+   1972	      0	    293	   2265	    8d9	   atmega48p   Passon
+   1972	      0	    293	   2265	    8d9	   atmega88p   Passon
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestPasson.c:27:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+   1978	      0	    293	   2271	    8df	   atmega168p  Passon
+   1978	      0	    293	   2271	    8df	   atmega328p  Passon
+   1982	      0	    293	   2275	    8e3	   atmega164p  Passon
+   1982	      0	    293	   2275	    8e3	   atmega324p  Passon
+   1982	      0	    293	   2275	    8e3	   atmega644p  Passon
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestPasson.c:27:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+   1982	      0	    293	   2275	    8e3	   atmega1284p Passon
+   1982	      0	    293	   2275	    8e3	   atmega644   Passon
+  >size       0       0       0       0    attiny24    Remember
+  >size       0       0       0       0    attiny44    Remember
+   2624	      0	    364	   2988	    bac	   attiny84    Remember
+  >size       0       0       0       0    attiny25    Remember
+  >size       0       0       0       0    attiny45    Remember
+   2626	      0	    364	   2990	    bae	   attiny85    Remember
+  >size       0       0       0       0    attiny261   Remember
+  >size       0       0       0       0    attiny461   Remember
+   2622	      0	    364	   2986	    baa	   attiny861   Remember
+   2584	      0	    364	   2948	    b84	   atmega8     Remember
+   2628	      0	    364	   2992	    bb0	   atmega16    Remember
+   2592	      0	    364	   2956	    b8c	   atmega32    Remember
+   2612	      0	    364	   2976	    ba0	   atmega64    Remember
+   2612	      0	    364	   2976	    ba0	   atmega128   Remember
+   2652	      0	    364	   3016	    bc8	   atmega640   Remember
+   2652	      0	    364	   3016	    bc8	   atmega1280  Remember
+   2652	      0	    364	   3016	    bc8	   atmega1281  Remember
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   2652	      0	    364	   3016	    bc8	   atmega2560  Remember
+../src/femtoos_core.c: In function 'privInitContext':
+../src/femtoos_core.c:775: warning: right shift count >= width of type
+   2652	      0	    364	   3016	    bc8	   atmega2561  Remember
+  >size       0       0       0       0    atmega48    Remember
+   2620	      0	    364	   2984	    ba8	   atmega88    Remember
+   2628	      0	    364	   2992	    bb0	   atmega168   Remember
+  >size       0       0       0       0    atmega48p   Remember
+   2620	      0	    364	   2984	    ba8	   atmega88p   Remember
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestRemember.c:27:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:67:4: warning: #warning "Port for this device (ATmega168P) is untested"
+   2628	      0	    364	   2992	    bb0	   atmega168p  Remember
+   2628	      0	    364	   2992	    bb0	   atmega328p  Remember
+   2632	      0	    364	   2996	    bb4	   atmega164p  Remember
+   2632	      0	    364	   2996	    bb4	   atmega324p  Remember
+   2632	      0	    364	   2996	    bb4	   atmega644p  Remember
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_port.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../include/femtoos_code.h:28,
+                 from ../src/code_TestRemember.c:27:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_types.h:29,
+                 from ../include/femtoos_shared.h:28,
+                 from ../src/femtoos_shared.c:28:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../src/femtoos_startup.s:26:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../include/femtoos_constants.h:165,
+                 from ../include/femtoos_port.h:40,
+                 from ../include/femtoos_core.h:28,
+                 from ../src/femtoos_core.c:25:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+In file included from ../src/femtoos_startup.s:36:
+../include/femtoos_device.h:46:4: warning: #warning "Port for this device (ATmega1284P) is untested"
+   2632	      0	    364	   2996	    bb4	   atmega1284p Remember
+   2632	      0	    364	   2996	    bb4	   atmega644   Remember

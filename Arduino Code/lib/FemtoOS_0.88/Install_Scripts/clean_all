@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ -d Install_Scripts ]
+then
+  echo "=== Cleaning up"
+else
+  echo "Start me in the FemtoOS_[version] directory of the Femto OS distribution, with ./Install_Scripts/clean_all "
+  exit 0
+fi
+
+rm -rf IDE/workspace/
+rm -rf download/
+rm -rf IDE/proc/
+rm -rf MainCode/registers/
+rm -rf log/
+rm -rf temp/
+find ./ -follow -type f -name ".*~" -exec rm -f {} \;

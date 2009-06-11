@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ -d Install_Scripts ]
+then
+  echo "=== Making workspace"
+else
+  echo "Start me in the FemtoOS_[version] directory of the Femto OS distribution, with ./Install_Scripts/install_workspace "
+  exit 0
+fi
+
+mkdir -p IDE/workspace
+echo "=== Making demo projects"
+Install_Scripts/create_project Remember $1
+Install_Scripts/create_project Interrupt $1
+Install_Scripts/create_project Queus $1
+Install_Scripts/create_project Shell $1
+Install_Scripts/create_project Bare $1
+Install_Scripts/create_project FlashLeds $1
+Install_Scripts/create_project Hooks $1
+Install_Scripts/create_project Minimal $1
+Install_Scripts/create_project Rendezvous $1
+Install_Scripts/create_project Sleep $1
+Install_Scripts/create_project Watchdog $1
+Install_Scripts/create_project Passon $1
+echo "=== Done"
