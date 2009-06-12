@@ -30,7 +30,7 @@ inline byte    available    (void)  { return Serial3.available(); }
 inline char    read         (void)  { return Serial3.read();      }
 
 // receiving & parsing commands
-       byte    fill         (void);
+        char*  fill         (void);
 _GPS_package*  parse        (void);
 unsigned long  get          (data_types);
 
@@ -58,6 +58,8 @@ private:
 //  GPS buffers
 	char          buffer_in [75];
 	char          buffer_out[25];
+	char         *pbuffer_in,
+	             *pbuffer_out;
    _GPS_package   GPS_package, *pGPS_package;
 
 	typedef union {

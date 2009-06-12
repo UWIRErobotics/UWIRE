@@ -95,6 +95,14 @@ void HardwareSerial::write(uint8_t c)
 }
 
 
+/*void HardwareSerial::drop(uint8_t c)
+{
+	while (! ( (*_ucsra) & (1 << _udre) ) )
+		;
+
+	*_udr = c;
+}*/
+
 // Preinstantiate Objects //////////////////////////////////////////////////////
 ring_buffer rx_buffer0 = { { 0 }, 0, 0 };
 ring_buffer rx_buffer1 = { { 0 }, 0, 0 };
@@ -109,19 +117,19 @@ HardwareSerial Serial3(&rx_buffer3, &UBRR3H, &UBRR3L, &UCSR3A, &UCSR3B, &UDR3, R
 
 
 /* SET SERIAL INTERRUPTS HERE (for now, just stores received value) */
-// console / debug
+
 SIGNAL(SIG_USART0_RECV){
 	unsigned char c = UDR0;
 	store_char(c, &rx_buffer0);
 }
 
-// arduino 'brain'
+
 SIGNAL(SIG_USART1_RECV){
 	unsigned char c = UDR1;
 	store_char(c, &rx_buffer1);
 }
 
-// GPS
+
 SIGNAL(SIG_USART2_RECV){
 	unsigned char c = UDR2;
 	store_char(c, &rx_buffer2);
@@ -130,4 +138,7 @@ SIGNAL(SIG_USART2_RECV){
 SIGNAL(SIG_USART3_RECV){
 	unsigned char c = UDR3;
 	store_char(c, &rx_buffer3);
+
+	if('*' == c)
+		Serial3.done = true;
 }

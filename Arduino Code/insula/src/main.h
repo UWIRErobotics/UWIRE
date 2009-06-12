@@ -8,12 +8,21 @@
 #include "I2C.h"
 
 
+typedef union
+{
+	uint16_t container;
+	struct{
+		uint8_t high;
+		uint8_t low;
+	};
+}byte16;
+
 /*****MAIN FUNCTIONS*****/
 void setup();
 void loop();
 int  main();
 
-byte CLI(char *);
+void CLI(char *);
 
 
 #endif /* MAIN_H_ */

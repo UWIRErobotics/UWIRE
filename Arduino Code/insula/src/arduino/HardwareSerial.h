@@ -24,6 +24,8 @@ virtual void     write(uint8_t);
 // pull in write(str) and write(buf, size) from Print
         using   Print::write;
 
+        bool done;
+
   private:
     ring_buffer *_rx_buffer;
 

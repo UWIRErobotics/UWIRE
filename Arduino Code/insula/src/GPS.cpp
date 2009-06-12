@@ -16,6 +16,9 @@ _GPS::_GPS(long baud)
 	for(int i = 25; i < 75; i++)
 		buffer_in[i]  = 0x0;
 
+	pbuffer_in  = &buffer_in[0];
+	pbuffer_out = &buffer_out[0];
+
 	pGPS_package           = &GPS_package;
 	GPS_package.time       = 0x0;
 	GPS_package.speed      = 0x0;
@@ -29,7 +32,7 @@ _GPS::_GPS(long baud)
 }
 
 
-byte _GPS::fill(void)
+char * _GPS::fill(void)
 {
 	byte i = 0x00;
 
@@ -38,7 +41,8 @@ byte _GPS::fill(void)
 
 	Serial3.flush();
 
-	return i;	//return # of characters (size of buffer in bytes)
+	//return i;	//return # of characters (size of buffer in bytes)
+	return pbuffer_in;
 }
 
 
@@ -46,6 +50,13 @@ _GPS_package* _GPS::parse(void)
 {
 	byte index = 0x00;
 	byte comma = 0x00;
+
+	GPS_package.time       = 0x0;
+	GPS_package.speed      = 0x0;
+	GPS_package.course     = 0x0;
+	GPS_package.latitude   = 0x0;
+	GPS_package.longitude  = 0x0;
+
 
 	do
 	{
