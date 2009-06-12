@@ -1,20 +1,12 @@
 #include "main.h"
 
-// Message Headers
-#define Sonar1  0x71
-#define Sonar2  0x72
-#define Sonar3  0x74
-#define Sonar4  0x78
-#define TestMsg 0xFF
-
-
 byte16 val;
 
 void setup()
 {
 	Serial0.begin(19200);   //user console
 	Serial1.begin(9600);	//cogzilla
-//  Serial3.begin(19200);	//GPS
+//  Serial3.begin(38400);	//GPS
 
 	Serial0.println("Insular Cortex Console");
 }
@@ -22,26 +14,32 @@ void setup()
 
 void loop()
 {
-
+//  once the checksum character ( * ) is found, 'done' becomes true
 	if(Serial3.done == true)
 	{
 		unsigned long temp = 0;
-		char *pbuff = GPS.fill();
+		char *pbuff = GPS.fill();	//fill our 'parsing' buffer
 
+//      Parse & Package the data, indicate we're done
+//      with this set of GPS data
+		GPS.parse();
+		Serial3.done = false;
+
+//      Only for debugging purposes, to get
+//		data use the GPS.get(...) command
 		Serial0.println();
 		Serial0.print(pbuff);
-		//Serial1.print(pbuff);
-
-		GPS.parse();
-
-		Serial3.done = false;
 
 		temp = GPS.get(GPS.time);
 		Serial0.print("Time = ");
 		Serial0.println(temp);
 
-		temp = GPS.get(GPS.speed);
+		temp = (unsigned int) GPS.get(GPS.speed);
 		Serial0.print("Speed = ");
+		Serial0.println(temp);
+
+		temp = (unsigned int) GPS.get(GPS.course);
+		Serial0.print("Course = ");
 		Serial0.println(temp);
 
 		temp = GPS.get(GPS.latitude);
@@ -51,7 +49,6 @@ void loop()
 		temp = GPS.get(GPS.longitude);
 		Serial0.print("Long = ");
 		Serial0.println(temp);
-		//Serial0.print(GPS.read());
 	}
 
 	if(Serial0.available() > 0)
@@ -163,7 +160,7 @@ void CLI(char *msg)
 		Serial0.write(message);
 		Serial0.println();
 
-		Serial1.write( TestMsg );
+		Serial1.write( ArduinoMSG );
 		Serial1.write(message);
 	}
 

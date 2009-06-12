@@ -1,7 +1,7 @@
 #include "GPS.h"
 
 /** OBJECT DECLARATION **/
-     _GPS GPS(19200);
+     _GPS GPS(38400);
 /**************************/
 
 _GPS::_GPS(long baud)
@@ -284,7 +284,7 @@ void _GPS::request(NMEA_types type, byte mode, byte rate, boolean chksum)
 
 void _GPS::calc_checksum(char *ptr)
 {
-	nybble checksum;
+	nybble8 checksum;
 	checksum.container = 0x00;
 
 	if(*ptr == '$')	   ptr++;
@@ -294,16 +294,16 @@ void _GPS::calc_checksum(char *ptr)
 
 //  convert checksum into ASCII values, put lower byte first
 	ptr++;
-	if(checksum.sigchar.lower <= 0x9)
-		*ptr = checksum.sigchar.lower + 48; //= ASCI conversion for numbers
+	if(checksum.lower <= 0x9)
+		*ptr = checksum.lower + 48; //= ASCI conversion for numbers
 	else
-		*ptr = checksum.sigchar.lower + 55; //= ASCI conversion for letters
+		*ptr = checksum.lower + 55; //= ASCI conversion for letters
 
 	ptr++;
-	if(checksum.sigchar.upper <= 0x9)
-		*ptr = checksum.sigchar.upper + 48;
+	if(checksum.upper <= 0x9)
+		*ptr = checksum.upper + 48;
 	else
-		*ptr = checksum.sigchar.upper + 55;
+		*ptr = checksum.upper + 55;
 }
 
 

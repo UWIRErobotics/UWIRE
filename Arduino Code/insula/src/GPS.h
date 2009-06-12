@@ -4,15 +4,7 @@
 #include <stddef.h>					//for "NULL"
 #include "arduino/wiring.h"			//for data types
 #include "arduino/HardwareSerial.h"	//for Serial
-
-
-typedef struct {   // data [potentially] sent to brain; integers are better!
-	unsigned long time;
-	unsigned long speed;
-	unsigned long course;
-	unsigned long latitude;
-	unsigned long longitude;
-}_GPS_package;
+#include "globals.h"
 
 
 class _GPS
@@ -56,19 +48,10 @@ private:
 	static const char seperator = ',';
 
 //  GPS buffers
-	char          buffer_in [75];
-	char          buffer_out[25];
-	char         *pbuffer_in,
-	             *pbuffer_out;
-   _GPS_package   GPS_package, *pGPS_package;
+	char          buffer_in [75], *pbuffer_in;
+	char          buffer_out[25], *pbuffer_out;
+   _GPS_package   GPS_package,    *pGPS_package;
 
-	typedef union {
-		byte container;
-		struct {
-			byte upper : 4;
-			byte lower : 4;
-		}sigchar;
-	}nybble;
 };
 
 /** OBJECT 'DECLARATION' **/
