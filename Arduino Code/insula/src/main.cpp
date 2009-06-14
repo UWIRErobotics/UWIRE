@@ -5,7 +5,7 @@ byte16 val;
 void setup()
 {
 	Serial0.begin(19200);   //user console
-	Serial1.begin(9600);	//cogzilla
+	//Serial1.begin(9600);	//cogzilla
 //  Serial3.begin(38400);	//GPS
 
 	Serial0.println("Insular Cortex Console");
@@ -15,7 +15,7 @@ void setup()
 void loop()
 {
 //  once the checksum character ( * ) is found, 'done' becomes true
-	if(Serial3.done == true)
+	if(Serial1.done == true)
 	{
 		unsigned long temp = 0;
 		char *pbuff = GPS.fill();	//fill our 'parsing' buffer
@@ -23,7 +23,7 @@ void loop()
 //      Parse & Package the data, indicate we're done
 //      with this set of GPS data
 		GPS.parse();
-		Serial3.done = false;
+		Serial1.done = false;
 
 //      Only for debugging purposes, to get
 //		data use the GPS.get(...) command
@@ -56,9 +56,10 @@ void loop()
 		char cmd = Serial0.read();
 		CLI( &cmd );
 	}
-<<<<<<< .mine
-}
-=======
+
+	/*<<<<<<< .mine
+
+=======*/
 
 }
 
@@ -178,15 +179,17 @@ void CLI(char *msg)
 		Serial0.print((int) val.high);
 		Serial0.print(" = ");
 		Serial0.println((int) val.container);
->>>>>>> .r37
+//>>>>>>> .r37
 
 		Serial1.write( Sonar4  );
 		Serial1.write( val.low );
 		Serial1.write( val.high);
 	}
+}
 
-<<<<<<< .mine
-void CLI(char *msg)
+//<<<<<<< .mine
+
+/*void CLI(char *msg)
 {
 //  ignore any leading spaces
 	while(' ' == *msg)
@@ -197,7 +200,7 @@ void CLI(char *msg)
 	Serial0.flush();	//ONLY RECEIVED 1 BYTE OMG!
 
 /************************* GPS *************************/
-	if     ('a' == *msg)	GPS.stop_feed(GPS.GGA);
+	/*if     ('a' == *msg)	GPS.stop_feed(GPS.GGA);
 	else if('b' == *msg)	GPS.stop_feed(GPS.GLL);
 	else if('c' == *msg)	GPS.stop_feed(GPS.GSA);
 	else if('d' == *msg)	GPS.stop_feed(GPS.GSV);
@@ -299,9 +302,9 @@ void CLI(char *msg)
 
 		delay(1000);
 	*/
-=======
->>>>>>> .r37
-}
+//=======
+//>>>>>>> .r37
+//}
 
 
 int main(void)

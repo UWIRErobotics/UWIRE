@@ -28,7 +28,7 @@ _GPS::_GPS(long baud)
 
 
 //  begin serial connection
-	Serial3.begin(baud);
+	Serial1.begin(baud);
 }
 
 
@@ -36,10 +36,10 @@ char * _GPS::fill(void)
 {
 	byte i = 0x00;
 
-	for(; Serial3.available() > 0; i++)
-		buffer_in[i] = Serial3.read();
+	for(; Serial1.available() > 0; i++)
+		buffer_in[i] = Serial1.read();
 
-	Serial3.flush();
+	Serial1.flush();
 
 	//return i;	//return # of characters (size of buffer in bytes)
 	return pbuffer_in;
@@ -315,7 +315,7 @@ void _GPS::calc_checksum(char *ptr)
  */
 void _GPS::send(char *ptr)
 {
-#define GPSout(x)	Serial3.print(x); Serial0.print(x);	//include 'Serial.print' only for debugging
+#define GPSout(x)	Serial1.print(x); Serial0.print(x);	//include 'Serial.print' only for debugging
 
 //	print everything up to the checksum boundary
 	for(; *ptr != '*'; ptr++)

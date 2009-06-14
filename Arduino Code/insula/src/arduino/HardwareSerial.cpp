@@ -140,5 +140,5 @@ SIGNAL(SIG_USART3_RECV){
 	store_char(c, &rx_buffer3);
 
 	if('*' == c)
-		Serial3.done = true;
+		Serial1.done = true;
 }

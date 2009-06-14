@@ -14,12 +14,12 @@ public:
 	typedef enum {time = 0, speed, course, latitude, longitude} data_types;
 
 	_GPS(long);
-	_GPS() {_GPS(4800);}
+	_GPS() {_GPS(38400);}
 	~_GPS(){}
 
 // 'raw' commands
-inline byte    available    (void)  { return Serial3.available(); }
-inline char    read         (void)  { return Serial3.read();      }
+inline byte    available    (void)  { return Serial1.available(); }
+inline char    read         (void)  { return Serial1.read();      }
 
 // receiving & parsing commands
         char*  fill         (void);
@@ -33,7 +33,7 @@ unsigned long  get          (data_types);
 	   void    send         (char *);
 inline void    send         (char *ptr, byte length)
 {	for(int i = 0; i < length; i++, ptr++)
-	{	Serial3.print(*ptr);
+	{	Serial1.print(*ptr);
 		Serial0.print (*ptr);}	//debugging only
 }
 
