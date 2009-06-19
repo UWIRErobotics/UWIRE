@@ -3,6 +3,7 @@
 
 #include "arduino/WProgram.h"
 #include "globals.h"
+#include "vehicle_control.h"
 
 
 /*****MAIN FUNCTIONS*****/
