@@ -1,16 +1,20 @@
 #include "main.h"
-//#include "arduino/MegaServo.h"
 
 char input = 'a' ;
 int set_angle=1300;
 int set_speed=0;
 
-//MegaServo Servos;
 
 void setup()
 {
 	Serial0.begin(9600);   //user console
 	//Serial1.begin(9600);    //insula comm
+
+	pinMode(53,INPUT);
+	vw_set_rx_pin(53);
+    vw_setup(3000);	 // Bits per sec
+
+    vw_rx_start();   // Start the receiver PLL running
 
 	Serial0.println("Cogzilla Console");
 	delay(500);
@@ -20,14 +24,64 @@ void setup()
 
 void loop()
 {
+	uint8_t buf[VW_MAX_MESSAGE_LEN];
+	uint8_t buflen = VW_MAX_MESSAGE_LEN;
 
+    if( vw_get_message(buf, &buflen) )
+    {
+    	Serial0.print("Got: ");
+		for (int i = 0; i < buflen; i++)
+		{
+			Serial0.print(buf[i]);
+			Serial0.print(" ");
+		}
 
+    	input = buf[0];
+
+    	if (input == 'a')
+    	{
+    		neuro_bot.set_turn_angle(set_angle+=50);
+    		Serial0.print ("Angle Set to:");
+    		Serial0.println(set_angle);
+    	}
+    	else if (input =='d')
+    	{
+    		neuro_bot.set_turn_angle(set_angle-=50);
+    		Serial0.print("Angle Set to:");
+    		Serial0.println(set_angle);
+    	}
+    	else if(input =='w')
+    	{
+    		neuro_bot.set_speed(set_speed+=5);
+    		Serial0.print("Speed Set to:");
+    		Serial0.println(set_speed);
+    	}
+    	else if(input =='s')
+    	{
+    		neuro_bot.set_speed(set_speed-=5);
+    		Serial0.print("Speed Set to:");
+    		Serial0.println(set_speed);
+    	}
+    	else if (input == 'j')
+    	{
+    		neuro_bot.set_speed(0);
+    		delay(50);
+    		neuro_bot.set_speed(set_speed);
+    		Serial0.println("Jogged");
+    	}
+    	else if (input == 'e')
+    	{
+    		Serial0.println("Exiting RC Drive");
+    	}
+
+    }
 
 	if(Serial1.available() > 0)
 		ArduinoComm();
 
 	if(Serial0.available() > 0)
 		CLI();
+
 }
 
 
@@ -79,8 +133,6 @@ void rc_drive()
 	}
 
 }
-
-
 
 
 void ArduinoComm()

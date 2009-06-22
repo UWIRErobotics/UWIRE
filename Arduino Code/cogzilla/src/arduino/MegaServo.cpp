@@ -68,7 +68,7 @@
 static servo_t servos[MAX_SERVOS];                         // static array of servo structures
 static volatile int8_t Channel[NBR_TIMERS];                // counter for the servo being pulsed for each timer (or -1 if refresh interval)
 #if defined(__AVR_ATmega1280__)
-typedef enum {  _timer5, _timer1, _timer3, _timer4 } servoTimer_t; // this is the sequence for timer utilization
+typedef enum {  _timer5, _timer3, _timer4 } servoTimer_t; // this is the sequence for timer utilization
 #else
 typedef enum { _timer1 } servoTimer_t;                     // this is the sequence for timer utilization
 #endif
@@ -111,13 +111,12 @@ static inline void handle_interrupts(servoTimer_t timer, volatile uint16_t *TCNT
 	Channel[timer] = -1; // this will get incremented at the end of the refresh period to start again at the first channel
   }
 }
-
+/*
 SIGNAL (TIMER1_COMPA_vect)
 {
   handle_interrupts(_timer1, &TCNT1, &OCR1A);
 }
-
-#if defined(__AVR_ATmega1280__)
+*/
 SIGNAL (TIMER3_COMPA_vect)
 {
   handle_interrupts(_timer3, &TCNT3, &OCR3A);
@@ -130,19 +129,17 @@ SIGNAL (TIMER5_COMPA_vect)
 {
   handle_interrupts(_timer5, &TCNT5, &OCR5A);
 }
-#endif
 
 static void initISR(servoTimer_t timer)
-{
+{/*
   if(timer == _timer1) {
     TCCR1A = 0;             // normal counting mode
     TCCR1B = _BV(CS11);     // set prescaler of 8
     TCNT1 = 0;              // clear the timer count
     TIFR1 = _BV(OCF1A);     // clear any pending interrupts;
     TIMSK1 =  _BV(OCIE1A) ; // enable the output compare interrupt
-  }
-#if defined(__AVR_ATmega1280__)
-  else if(timer == _timer3) {
+  }*/
+  if(timer == _timer3) {
     TCCR3A = 0;             // normal counting mode
     TCCR3B = _BV(CS31);     // set prescaler of 8
     TCNT3 = 0;              // clear the timer count
@@ -163,7 +160,6 @@ static void initISR(servoTimer_t timer)
     TIFR5 = _BV(OCF5A);     // clear any pending interrupts;
     TIMSK5 =  _BV(OCIE5A) ; // enable the output compare interrupt
   }
-#endif
 }
 
 static boolean isTimerActive(servoTimer_t timer)
