@@ -38,6 +38,7 @@ inline void    start_feed   (NMEA_types x, byte y, boolean z)  {request(x,0,y,z)
 inline void    send         (void)                             {send(buffer_out, 25);}
 inline void    calc_checksum(void)                             {calc_checksum(buffer_out);}
 
+_GPS_package   GPS_package, *pGPS_package;
 
 private:
 	static const char seperator = ',';
@@ -45,8 +46,6 @@ private:
 //  GPS buffers
 	char          buffer_in [75], *pbuffer_in;
 	char          buffer_out[25], *pbuffer_out;
-   _GPS_package   GPS_package,    *pGPS_package;
-
 };
 
 /** OBJECT 'DECLARATION' **/

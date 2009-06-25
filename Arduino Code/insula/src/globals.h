@@ -3,8 +3,11 @@
 
 
 /********** MESSAGE HEADERS **********/
+#define ERROR          0x00
 #define ArduinoMSG     0xFF
 #define ArduinoCMD     0x66
+
+#define RemoteControl  0x55
 
 #define Sonar1         0x71	// all 'Sonar#' def's are
 #define Sonar2         0x72	// also their respective
@@ -56,12 +59,13 @@ typedef union
 
 typedef struct
 {
-	unsigned long time;		  //max value = 235959000
-	unsigned int  speed;
-	unsigned int  course;	  //max value = 35999   **NOTE, comes in 4 OR 5 digits...
-	unsigned long latitude;
-	unsigned long longitude;
+	uint32_t time;		  //max value = 235959000
+	uint16_t speed;
+	uint16_t course;	  //max value = 35999   **NOTE, comes in 4 OR 5 digits...
+	uint32_t latitude;
+	uint32_t longitude;
 }_GPS_package;
+
 
 
 

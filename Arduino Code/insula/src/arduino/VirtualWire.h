@@ -2,7 +2,7 @@
 #define VirtualWire_h
 
 #include <stdlib.h>
-#include <arduino/wiring.h>
+#include "wiring.h"
 
 
 #define VW_MAX_MESSAGE_LEN 30				// Maximum number of bytes in a message, counting the byte count and FCS

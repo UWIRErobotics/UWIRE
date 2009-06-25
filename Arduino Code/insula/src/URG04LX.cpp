@@ -5,7 +5,7 @@ URG04LX::URG04LX()
        : HardwareSerial(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2)
 { }
 
-
+/*
 void URG04LX::processMsg ( Buffer command, Buffer &header, Buffer &status, Buffer &data )
 {
        write(command);
@@ -54,7 +54,7 @@ void URG04LX::processMsg ( Buffer command, Buffer &header, Buffer &status, Buffe
        cout << endl;
 
 }
-
+*/
 void URG04LX::changeBaudRate(uint32_t baud)
 {
        char command[16] = {'S','0','0','0','0','0','0','X','X','X','X','X','X','X',0x0A,'\n'};
@@ -112,8 +112,8 @@ void URG04LX::changeBaudRate(uint32_t baud)
        write(command);
 
 }
-
-void LidarDriver::updateDistances()
+/*
+void URG04LX::updateDistances()
 {
 	char command[10] = {'G','0','0','0','7','6','8','0','0','\n'};
 
@@ -137,3 +137,9 @@ void LidarDriver::updateDistances()
        cout << distances[384] <<endl<<flush;
 
 }
+*/
+
+
+/** OBJECT DECLARATION **/
+	   URG04LX Lidar;
+/************************/

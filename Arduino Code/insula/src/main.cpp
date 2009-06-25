@@ -1,68 +1,111 @@
 #include "main.h"
 
-byte16 val;
+
+int main(void)
+{
+	init();
+	setup();
+
+	for (;;)
+	{
+		check_GPS();
+
+		check_msg();
+
+
+
+	}///loop()
+
+	return 0;
+}
+
 
 void setup()
 {
 //  start all comm links
-	Serial0.begin(19200); //user console
-	Brain.begin  (9600 ); //Serial1
-    GPS.begin    (38400); //Serial3
+	Serial0.begin(19200); 	// user console
+	Brain.begin  (38400); 	// Serial1
+//	Lidar.begin  (19200);	// Serial2
+	GPS.begin    (38400);	// Serial3
+
+//	setup wireless link
+	pinMode(36, INPUT);
+	vw_set_rx_pin(36);
+    vw_setup(2400);
+    vw_rx_start();
 
 	Serial0.println("Insular Cortex Console");
 }
 
 
-void loop()
+void check_msg(void)
 {
-//  once the checksum character ( * ) is found, 'done' goes high
-	if(Serialflag.done3 == 0x3)
-	{
-		unsigned long temp = 0;
-		char *pbuff = GPS.fill();	//fill our 'parsing' buffer
+//  input buffers
+	char     buff_console [VW_MAX_MESSAGE_LEN];	//same size as RF buffer (why not?)
+	uint8_t  buff_rf      [VW_MAX_MESSAGE_LEN];
+	uint8_t  len_rf   =    VW_MAX_MESSAGE_LEN;
+//  check RF
+	if(vw_get_message(buff_rf, &len_rf))
+		CLI((char *) buff_rf, len_rf);
 
-//      Parse & Package the data, then indicate we're done
-		GPS.parse();
-		Serialflag.done3 = 0x0;
-
-//      Only for debugging purposes
-		Serial0.println();
-		Serial0.print(pbuff);
-
-		temp = GPS.get(GPS.time);
-		Serial0.print("Time = ");
-		Serial0.println(temp);
-
-		temp = (unsigned int) GPS.get(GPS.speed);
-		Serial0.print("Speed = ");
-		Serial0.println(temp);
-
-		temp = (unsigned int) GPS.get(GPS.course);
-		Serial0.print("Course = ");
-		Serial0.println(temp);
-
-		temp = GPS.get(GPS.latitude);
-		Serial0.print("Lat = ");
-		Serial0.println(temp);
-
-		temp = GPS.get(GPS.longitude);
-		Serial0.print("Long = ");
-		Serial0.println(temp);
-	}
-
+//  check user console
 	if(Serial0.available() > 0)
 	{
-		char cmd[16];
-		for(int i = 0; Serial0.available() > 0; i++)
-			cmd[i] = Serial0.read();
+		uint8_t len_console = 0x00;
+		for(; Serial0.available() > 0; len_console++)
+			buff_console[len_console] = Serial0.read();
 
-		Serial0.flush();
-		CLI( cmd );
+		CLI(buff_console, len_console);
 	}
 }
 
 
-void CLI(char *msg)
+void check_GPS()
+{
+	if(0x3 == Serialflag.done3)
+	{
+		char *data = NULL;
+
+		GPS.fill();
+		data = (char *) GPS.parse();
+		Serialflag.done3 = 0x0;
+
+		Brain.write(GPS_time);		//4 bytes
+		Serial0.write(GPS_time);
+		Brain.write(data);	Serial0.write(data); data++;
+		Brain.write(data);	Serial0.write(data); data++;
+		Brain.write(data);	Serial0.write(data); data++;
+		Brain.write(data);	Serial0.write(data); data++;
+
+
+		Brain.write(GPS_latitude);	//4 bytes
+		Brain.write(data);	data++;
+		Brain.write(data);	data++;
+		Brain.write(data);	data++;
+		Brain.write(data);	data++;
+
+		Brain.write(GPS_longitude);	//4 bytes
+		Brain.write(data);	data++;
+		Brain.write(data);	data++;
+		Brain.write(data);	data++;
+		Brain.write(data);	data++;
+
+		Brain.write(GPS_speed);		//2 bytes
+		Brain.write(data);	data++;
+		Brain.write(data);	data++;
+
+		Brain.write(GPS_course);	//2 bytes
+		Brain.write(data);	data++;
+		Brain.write(data);
+	}
+}
+
+/* Insular Cortex Command Line Interpreter *
+ *******************************************
+ * currently, we don't do anything with    *
+ * length, just parse the first byte in    *
+ * the received array from Serial0 or RF   */
+void CLI(char *msg, uint8_t length)
 {
 //  ignore any leading spaces
 	while(' ' == *msg)
@@ -71,30 +114,14 @@ void CLI(char *msg)
 	Serial0.print("Received: ");
 	Serial0.println(*msg);
 
+	byte16 val;	// sonar buffer
 
-/************************* GPS *************************/
-	if     ('a' == *msg)	GPS.stop_feed(GPS.GGA);
-	else if('b' == *msg)	GPS.stop_feed(GPS.GLL);
-	else if('c' == *msg)	GPS.stop_feed(GPS.GSA);
-	else if('d' == *msg)	GPS.stop_feed(GPS.GSV);
-	else if('e' == *msg)	GPS.stop_feed(GPS.RMC);
-	else if('f' == *msg)	GPS.stop_feed(GPS.VTG);
-
-	else if('g' == *msg)	GPS.start_feed(GPS.GGA, 1, true);
-	else if('h' == *msg)	GPS.start_feed(GPS.GLL, 1, true);
-	else if('i' == *msg)	GPS.start_feed(GPS.GSA, 1, true);
-	else if('j' == *msg)	GPS.start_feed(GPS.GSV, 1, true);
-	else if('k' == *msg)	GPS.start_feed(GPS.RMC, 1, true);
-	else if('l' == *msg)	GPS.start_feed(GPS.VTG, 1, true);
-
-//  void set_param(long baud, byte data_bits, boolean stop, byte parity)
-	else if('m' == *msg)	GPS.set_param(1200,  8, true, 0);
-	else if('n' == *msg)	GPS.set_param(2400,  8, true, 0);
-	else if('o' == *msg)	GPS.set_param(4800,  8, true, 0);
-	else if('p' == *msg)	GPS.set_param(9600,  8, true, 0);
-	else if('q' == *msg)	GPS.set_param(19200, 8, true, 0);
-	else if('r' == *msg)	GPS.set_param(38400, 8, true, 0);
-
+	if     ('~' == *msg)
+	{
+		Serial0.println("Entering RC mode");
+		RC_mode();
+		Serial0.println("Leaving RC mode");
+	}
 
 /************************* Arduino-Arduino Communication *************************/
 	else if('A' == *msg)
@@ -183,15 +210,54 @@ void CLI(char *msg)
 		Brain.write( val.high);
 	}
 
+/*******************GPS configuration *************************/
+		else if('a' == *msg)	GPS.stop_feed(GPS.GGA);
+		else if('b' == *msg)	GPS.stop_feed(GPS.GLL);
+		else if('c' == *msg)	GPS.stop_feed(GPS.GSA);
+		else if('d' == *msg)	GPS.stop_feed(GPS.GSV);
+		else if('e' == *msg)	GPS.stop_feed(GPS.RMC);
+		else if('f' == *msg)	GPS.stop_feed(GPS.VTG);
+
+		else if('g' == *msg)	GPS.start_feed(GPS.GGA, 1, true);
+		else if('h' == *msg)	GPS.start_feed(GPS.GLL, 1, true);
+		else if('i' == *msg)	GPS.start_feed(GPS.GSA, 1, true);
+		else if('j' == *msg)	GPS.start_feed(GPS.GSV, 1, true);
+		else if('k' == *msg)	GPS.start_feed(GPS.RMC, 1, true);
+		else if('l' == *msg)	GPS.start_feed(GPS.VTG, 1, true);
+
+	//  void set_param(long baud, byte data_bits, boolean stop, byte parity)
+		else if('m' == *msg)	GPS.set_param(1200,  8, true, 0);
+		else if('n' == *msg)	GPS.set_param(2400,  8, true, 0);
+		else if('o' == *msg)	GPS.set_param(4800,  8, true, 0);
+		else if('p' == *msg)	GPS.set_param(9600,  8, true, 0);
+		else if('q' == *msg)	GPS.set_param(19200, 8, true, 0);
+		else if('r' == *msg)	GPS.set_param(38400, 8, true, 0);
+
+	Serial0.println();
 }
 
-int main(void)
+//TODO: clean this up...
+void RC_mode()
 {
-	init();
-	setup();
+	char temp = ERROR;
+	Brain.write(RemoteControl);
+	delay(10);
 
-	for (;;)
-		loop();
+//  we need an acknowledgement, but don't freeze waiting for it
+	for(int i = 0; i < 10; i++)
+	{
+		if(Brain.available() > 0)
+		{
+			temp = Brain.read();
+			break;
+		}
+		else	delay(10);
+	}
 
-	return 0;
+//	only proceed if we got an aknowledgement
+	while(RemoteControl == temp)
+	{
+		//TODO: wait for RF to come in, send packet immediately,
+		//      and wait for the stop byte ( ~ ) to be sent
+	}
 }

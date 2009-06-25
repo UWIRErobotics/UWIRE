@@ -1,4 +1,4 @@
-#include "arduino/WProgram.h"
+#include "WProgram.h"
 #include "VirtualWire.h"
 #include <util/crc16.h>
 

@@ -13,10 +13,15 @@ public:
     URG04LX();
    ~URG04LX(){}
 
-   void processMsg      ( Buffer, Buffer*, Buffer *, Buffer * );
-   void changeBaudRate  (void);
+// void processMsg      ( Buffer, Buffer*, Buffer *, Buffer * );
+   void changeBaudRate  (uint32_t);
    void updateDistances (void);
 
 };
+
+
+/*** OBJECT 'DECLARATION' ***/
+    extern URG04LX Lidar;
+/****************************/
 
 #endif /* URG04LX_H_ */
