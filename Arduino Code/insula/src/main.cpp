@@ -1,31 +1,12 @@
 #include "main.h"
 
 
-int main(void)
-{
-	init();
-	setup();
-
-	for (;;)
-	{
-		check_GPS();
-
-		check_msg();
-
-
-
-	}///loop()
-
-	return 0;
-}
-
-
 void setup()
 {
 //  start all comm links
 	Serial0.begin(19200); 	// user console
 	Brain.begin  (38400); 	// Serial1
-//	Lidar.begin  (19200);	// Serial2
+	Lidar.begin  (19200);	// Serial2
 	GPS.begin    (38400);	// Serial3
 
 //	setup wireless link
@@ -40,15 +21,14 @@ void setup()
 
 void check_msg(void)
 {
-//  input buffers
-	char     buff_console [VW_MAX_MESSAGE_LEN];	//same size as RF buffer (why not?)
-	uint8_t  buff_rf      [VW_MAX_MESSAGE_LEN];
-	uint8_t  len_rf   =    VW_MAX_MESSAGE_LEN;
-//  check RF
-	if(vw_get_message(buff_rf, &len_rf))
-		CLI((char *) buff_rf, len_rf);
+//  check Lidar
+	if(Lidar.available() > 0)
+		Serial0.write( Lidar.read() );
+
 
 //  check user console
+	char buff_console [VW_MAX_MESSAGE_LEN];	//same size as RF buffer (why not?)
+
 	if(Serial0.available() > 0)
 	{
 		uint8_t len_console = 0x00;
@@ -57,6 +37,14 @@ void check_msg(void)
 
 		CLI(buff_console, len_console);
 	}
+
+
+//  check RF
+	uint8_t  buff_rf      [VW_MAX_MESSAGE_LEN];
+	uint8_t  len_rf   =    VW_MAX_MESSAGE_LEN;
+
+	if(vw_get_message(buff_rf, &len_rf))
+		CLI((char *) buff_rf, len_rf);
 }
 
 
@@ -100,6 +88,7 @@ void check_GPS()
 	}
 }
 
+
 /* Insular Cortex Command Line Interpreter *
  *******************************************
  * currently, we don't do anything with    *
@@ -122,6 +111,23 @@ void CLI(char *msg, uint8_t length)
 		RC_mode();
 		Serial0.println("Leaving RC mode");
 	}
+
+
+
+/******************** LIDAR *****************/
+	else if('a' == *msg)	Lidar.getInfo('V');
+	else if('b' == *msg)	Lidar.getInfo('P');
+	else if('c' == *msg)	Lidar.getInfo('I');
+	else if('d' == *msg)	Lidar.laser(0);
+	else if('e' == *msg)	Lidar.laser(1);
+	else if('f' == *msg)	Lidar.timeInfo();
+	else if('r' == *msg)	Lidar.reset();
+
+	else if('g' == *msg)	Lidar.distAcq();
+	else if('h' == *msg)	Lidar.supertest();
+
+	else if('l' == *msg)	Serial0.print(LidarCount, DEC);
+
 
 /************************* Arduino-Arduino Communication *************************/
 	else if('A' == *msg)
@@ -210,7 +216,7 @@ void CLI(char *msg, uint8_t length)
 		Brain.write( val.high);
 	}
 
-/*******************GPS configuration *************************/
+/*******************GPS configuration *************************
 		else if('a' == *msg)	GPS.stop_feed(GPS.GGA);
 		else if('b' == *msg)	GPS.stop_feed(GPS.GLL);
 		else if('c' == *msg)	GPS.stop_feed(GPS.GSA);
@@ -232,8 +238,9 @@ void CLI(char *msg, uint8_t length)
 		else if('p' == *msg)	GPS.set_param(9600,  8, true, 0);
 		else if('q' == *msg)	GPS.set_param(19200, 8, true, 0);
 		else if('r' == *msg)	GPS.set_param(38400, 8, true, 0);
-
+*/
 	Serial0.println();
+	Serial0.flush();
 }
 
 //TODO: clean this up...
@@ -260,4 +267,23 @@ void RC_mode()
 		//TODO: wait for RF to come in, send packet immediately,
 		//      and wait for the stop byte ( ~ ) to be sent
 	}
+}
+
+
+int main(void)
+{
+	init();
+	setup();
+
+	for (;;)
+	{
+		check_GPS();
+
+		check_msg();
+
+
+
+	}///loop()
+
+	return 0;
 }

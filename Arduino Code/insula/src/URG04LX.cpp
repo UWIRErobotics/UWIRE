@@ -2,8 +2,16 @@
 
 
 URG04LX::URG04LX()
-       : HardwareSerial(&rx_buffer3, &UBRR3H, &UBRR3L, &UCSR3A, &UCSR3B, &UDR3, RXEN3, TXEN3, RXCIE3, UDRE3)
-{ }
+       : HardwareSerial(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2)
+{	// use "MS..." for 2-bit encoding, "MD..." for 3-bit
+	char msg[17] = {'M','S','0','1','0','0',	 //start step
+						    '0','6','6','8',	 //end step
+						    '0','1','1',		 //cluster count, scan interval
+						    '0','1',0xA,'\n'}; 	 //# of scans
+
+	for(int i = 0; i < 17; i++)
+		distance_msg[i] = msg[i];
+}
 
 
 void URG04LX::getInfo(uint8_t mode)
@@ -96,20 +104,75 @@ void URG04LX::baudRate(uint32_t baud)
    write(command);
 }
 
-
-void URG04LX::distAcq (uint16_t start, uint16_t end, uint8_t cluster)
+void URG04LX::supertest(void)
 {
-	char msg[17] = {'M','D','0','0','0','0',	 //start step
-						    '0','0','0','0',	 //end step
-						    '0','1','1',		 //cluster count, scan interval
-						    '0','1',0xA,'\n'}; //# of scans
+	distance_msg[1] = 'D';
+	distAcq();
+	distance_msg[1] = 'S';
 
+}
+
+void URG04LX::distAcq (void)
+{
+	uint8_t  lines     = 0x00;
+	uint8_t  whichbyte = 0x00;
+	uint16_t temp      = 0x00;
+	uint16_t angle     = 100;
+
+	LidarCount = 0;
+	write(distance_msg);
+
+	while(LidarCount < 1024);	//wait for incoming data
+
+	for(uint16_t i = 0; i < LidarCount; i++)
+	{
+		switch (lines)
+		{
+			case 0:	//skip all the header stuff
+			case 1: //
+			case 2: //
+			case 3: //
+			case 4: //
+			case 5: //
+			{
+				if( 0xA == big_buffer[i] )	lines++;
+				whichbyte = 0;
+				break;
+			}
+
+			case 6:	//6....18? something like that. find out. do it.
+			case 7:
+			default:
+			{
+				if(0 == whichbyte)	temp = 0;
+
+				big_buffer[i] -= 0x30;	//decipher that byte
+				temp <<= 6;				//shift 'high' byte to the
+
+				temp += big_buffer[i];
+
+				whichbyte++;
+				if(2 == whichbyte)
+				{
+					Serial0.print(angle, DEC);
+					Serial0.print(" : ");
+					Serial0.println(temp, DEC);
+					whichbyte = 0;
+					angle++;
+				}
+			}
+
+		}//switch..case
+
+	}//for loop
+
+	flush();
 
 }
 
 
 // refer to page (14/19) for meanings
-void URG04LX::setMotor(uint8_t speed)
+void URG04LX::setMotor(uint16_t speed)
 {
    char command[6] = {'C','R','0','0',0x0A,'\n'};
 
@@ -149,93 +212,15 @@ void URG04LX::setMotor(uint8_t speed)
 }
 
 
-void URG04LX::setMotor(uint16_t speed)
-{
-   switch(speed)
-   {
-	   case 600:
-	   {
-		   setMotor((uint8_t) 0);
-		   break;
-	   }
-
-	   case 594:
-	   {
-		   setMotor((uint8_t) 1);
-		   break;
-	   }
-
-	   case 588:
-	   {
-		   setMotor((uint8_t) 2);
-		   break;
-	   }
-
-	   case 582:
-	   {
-		   setMotor((uint8_t) 3);
-		   break;
-	   }
-
-	   case 576:
-	   {
-		   setMotor((uint8_t) 4);
-		   break;
-	   }
-
-	   case 570:
-	   {
-		   setMotor((uint8_t) 5);
-		   break;
-	   }
-
-	   case 564:
-	   {
-		   setMotor((uint8_t) 6);
-		   break;
-	   }
-
-	   case 558:
-	   {
-		   setMotor((uint8_t) 7);
-		   break;
-	   }
-
-	   case 552:
-	   {
-		   setMotor((uint8_t) 8);
-		   break;
-	   }
-
-	   case 546:
-	   {
-		   setMotor((uint8_t) 9);
-		   break;
-	   }
-
-	   case 540:
-	   {
-		   setMotor((uint8_t) 10);
-		   break;
-	   }
-
-	   default:
-	   {
-		   setMotor((uint8_t) 99);
-		   break;
-	   }
-   }
-}
-
 //just support requesting time, we don't even need that...
-inline void URG04LX::timeInfo (void)
+void URG04LX::timeInfo (void)
 {
-	char msg[5] = {'T','M',0x1,0xA,'\n'};
+	char msg[5] = {'T','M','1',0xA,'\n'};
 
 	write(msg);
 }
 
-inline void URG04LX::reset(void)
+void URG04LX::reset(void)
 {
 	char msg[4] = {'R','S',0xA,'\n'};
 

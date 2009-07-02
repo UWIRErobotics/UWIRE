@@ -6,11 +6,15 @@
 #include "HardwareSerial.h"
 
 
-ring_buffer rx_buffer0 = { { 0 }, 0, 0 };
-ring_buffer rx_buffer1 = { { 0 }, 0, 0 };
-ring_buffer rx_buffer2 = { { 0 }, 0, 0 };
-ring_buffer rx_buffer3 = { { 0 }, 0, 0 };
+ring_buffer rx_buffer0 = { 0, 0, { 0 } };
+ring_buffer rx_buffer1 = { 0, 0, { 0 } };
+ring_buffer rx_buffer2 = { 0, 0, { 0 } };
+ring_buffer rx_buffer3 = { 0, 0, { 0 } };
 
+USARTflags Serialflag = { 0, 0, 0, 0 };
+
+volatile uint16_t LidarCount       = 0;
+         char     big_buffer[2048] = {0x00};
 
 // Constructors ////////////////////////////////////////////////////////////////
 HardwareSerial::HardwareSerial(ring_buffer *rx_buffer,
@@ -104,37 +108,33 @@ HardwareSerial Serial0(&rx_buffer0, &UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UDR0, R
 //HardwareSerial Serial2(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2);
 //HardwareSerial Serial3(&rx_buffer3, &UBRR3H, &UBRR3L, &UCSR3A, &UCSR3B, &UDR3, RXEN3, TXEN3, RXCIE3, UDRE3);
 
-USARTflags Serialflag = {0, 0, 0, 0};
-
 
 /* SET SERIAL INTERRUPTS HERE (for now, just stores received value) */
-
-SIGNAL(SIG_USART0_RECV){
+SIGNAL(SIG_USART0_RECV)
+{
 	unsigned char c = UDR0;
 	store_char(c, &rx_buffer0);
-
-	if('*' == c)	Serialflag.done0 = 0x3;
 }
 
 
-SIGNAL(SIG_USART1_RECV){
+SIGNAL(SIG_USART1_RECV)
+{
 	unsigned char c = UDR1;
 	store_char(c, &rx_buffer1);
-
-	if('*' == c)	Serialflag.done1 = 0x3;
 }
 
 
-SIGNAL(SIG_USART2_RECV){
+SIGNAL(SIG_USART2_RECV)
+{
 	unsigned char c = UDR2;
 	store_char(c, &rx_buffer2);
 
-	if('*' == c)	Serialflag.done2 = 0x3;
+	big_buffer[LidarCount] = UDR2;
+	LidarCount++;
 }
 
-SIGNAL(SIG_USART3_RECV){
+SIGNAL(SIG_USART3_RECV)
+{
 	unsigned char c = UDR3;
 	store_char(c, &rx_buffer3);
-
-	if('*' == c)	Serialflag.done3 = 0x3;
 }

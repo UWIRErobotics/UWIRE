@@ -6,7 +6,7 @@
 #include "globals.h"
 #include "ArduinoLink.h"
 #include "GPS.h"
-//#include "URG04LX.h"
+#include "URG04LX.h"
 #include "I2C.h"
 
 
