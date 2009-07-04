@@ -11,7 +11,7 @@ class _GPS : public HardwareSerial
 {
 public:
 	typedef enum {GGA = 0, GLL, GSA, GSV, RMC, VTG} NMEA_types;
-	typedef enum {time = 0, speed, course, latitude, longitude} data_types;
+	typedef enum {time = 0, speed, course, latitude, longitude, pos_fix, sats_used, HDOP, altitude} data_types;
 
 	_GPS(void);
    ~_GPS(void){}

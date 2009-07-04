@@ -1,91 +1,176 @@
 #include "main.h"
 
+#define NUM_READINGS 2
+
+double obs_distance[NUM_READINGS];
+double obs_angle [NUM_READINGS] = {2.35619,0.7853981};
+double x_distance[NUM_READINGS];
+double y_distance[NUM_READINGS];
+double x_force [NUM_READINGS];
+double y_force [NUM_READINGS];
+
 
 void setup()
 {
 //  start all comm links
 	Serial0.begin(19200); 	// user console
-	Brain.begin  (38400); 	// Serial1
-	Lidar.begin  (19200);	// Serial2
+	Brain.begin  (9600); 	// Serial1
 	GPS.begin    (38400);	// Serial3
 
-//	setup wireless link
-	pinMode(36, INPUT);
-	vw_set_rx_pin(36);
-    vw_setup(2400);
-    vw_rx_start();
-
 	Serial0.println("Insular Cortex Console");
+	delay(500);
+}
+
+void GPS_print()
+{
+
+	Serial0.flush();
+	Serial0.println("Beginning GPS Stream!");
+	while(Serial0.read() != 'e')
+	{
+		//  once the checksum character ( * ) is found, 'done' goes high
+		if(Serialflag.done3 == 0x3)
+		{
+			unsigned long temp = 0;
+			char *pbuff = GPS.fill();	//fill our 'parsing' buffer
+
+			GPS.parse();
+			Serialflag.done3 = 0x0;
+
+	/*//      Only for debugging purposes
+			Serial0.println();
+			Serial0.print(pbuff);
+
+			temp = GPS.get(GPS.time);
+			Serial0.print("Time = ");
+			Serial0.println(temp);
+
+			temp = (unsigned int) GPS.get(GPS.speed);
+			Serial0.print("Speed = ");
+			Serial0.println(temp);
+
+			temp = (unsigned int) GPS.get(GPS.course);
+			Serial0.print("Course = ");
+			Serial0.println(temp);
+
+			temp = GPS.get(GPS.latitude);
+			Serial0.print("Lat = ");
+			Serial0.println(temp);
+
+			temp = GPS.get(GPS.longitude);
+			Serial0.print("Long = ");
+			Serial0.println(temp);*/
+
+			//Printing out in MATLAB-friendly format
+			temp = GPS.get(GPS.time);
+			Serial0.print(temp);
+			Serial0.print(",");
+
+			/*temp = (unsigned int) GPS.get(GPS.speed);
+			Serial0.print(temp);
+			Serial0.print(",");
+
+			temp = (unsigned int) GPS.get(GPS.course);
+			Serial0.print(temp);
+			Serial0.print(",");*/
+
+			temp = GPS.get(GPS.latitude);
+			Serial0.print(temp);
+			Serial0.print(",");
+
+			temp = GPS.get(GPS.longitude);
+			Serial0.print(temp);
+			Serial0.print(",");
+
+			temp = GPS.get(GPS.pos_fix);
+			Serial0.print(temp);
+			Serial0.print(",");
+
+			temp = GPS.get(GPS.sats_used);
+			Serial0.print(temp);
+			Serial0.print(",");
+
+			temp = GPS.get(GPS.HDOP);
+			Serial0.println(temp);
+		}
+	}
+
+	Serial0.println("Leaving GPS stream!");
+
 }
 
 
-void check_msg(void)
+void Sonar_calc()
 {
-//  check Lidar
-	if(Lidar.available() > 0)
-		Serial0.write( Lidar.read() );
+	double cum_force_x = 0;
+	double cum_force_y = 0;
+	byte32 cogzilla_info;
+	/* Highest  = negative x
+	 * High 	= positive x
+	 * Low		= negative y
+	 * Lowest	= positive y*/
 
-
-//  check user console
-	char buff_console [VW_MAX_MESSAGE_LEN];	//same size as RF buffer (why not?)
-
-	if(Serial0.available() > 0)
+	while(Serial0.read() != 'e')
 	{
-		uint8_t len_console = 0x00;
-		for(; Serial0.available() > 0; len_console++)
-			buff_console[len_console] = Serial0.read();
+		cum_force_x = 0;
+		cum_force_y = 0;
+		for(int i=0;i<NUM_READINGS;i++)
+		{
+			obs_distance[i] = Sonar.range(Sonar1 + i); //for now this is just 0x71 and 0x72...add lidar update here.
+			x_distance[i] = obs_distance[i]*(cos(obs_angle[i]));
+			y_distance[i] = obs_distance[i]*(sin(obs_angle[i]));
+			x_force[i] = (FORCE_CONST/obs_distance[i]) * (x_distance[i]/obs_distance[i]);
+			y_force[i] = (FORCE_CONST/obs_distance[i]) * (y_distance[i]/obs_distance[i]);
+			cum_force_x += x_force[i];
+			cum_force_y += y_force[i];
+		}
+		Serial0.print (cum_force_x);
+		Serial0.print ("     ");
+		Serial0.println(cum_force_y);
 
-		CLI(buff_console, len_console);
+
+		cogzilla_info.container = 0;
+		if (cum_force_x < -255)
+			cogzilla_info.highest = 255;
+		else if(cum_force_x > -255 && cum_force_x < 0)
+			cogzilla_info.highest = abs(cum_force_x);
+		else if(cum_force_x > 0 && cum_force_x < 255)
+			cogzilla_info.high = cum_force_x;
+		else //cum_force_X > 255
+			cogzilla_info.high = 255;
+
+		if (cum_force_y < -255)
+			cogzilla_info.low = 255;
+		else if(cum_force_y > -255 && cum_force_y < 0)
+			cogzilla_info.low = cum_force_y;
+		else if(cum_force_y > 0 && cum_force_y < 255)
+			cogzilla_info.lowest = cum_force_y;
+		else //cum_force_y > 255
+			cogzilla_info.lowest = 255;
+
+		Serial0.print ((int)cogzilla_info.highest);
+		Serial0.print ("     ");
+		Serial0.println ((int)cogzilla_info.high);
+		Serial0.print ((int)cogzilla_info.low);
+		Serial0.print ("     ");
+		Serial0.println ((int)cogzilla_info.lowest);
+		Serial0.println();
+		Serial0.println();
+
+		Brain.write(FORCE_HEADER_X);
+		Brain.write(cogzilla_info.highest);
+		Brain.write(cogzilla_info.high);
+		Brain.write(FORCE_HEADER_Y);
+		Brain.write(cogzilla_info.low);
+		Brain.write(cogzilla_info.lowest);
 	}
-
-
-//  check RF
-	uint8_t  buff_rf      [VW_MAX_MESSAGE_LEN];
-	uint8_t  len_rf   =    VW_MAX_MESSAGE_LEN;
-
-	if(vw_get_message(buff_rf, &len_rf))
-		CLI((char *) buff_rf, len_rf);
 }
 
 
-void check_GPS()
+
+void loop()
 {
-	if(0x3 == Serialflag.done3)
-	{
-		char *data = NULL;
-
-		GPS.fill();
-		data = (char *) GPS.parse();
-		Serialflag.done3 = 0x0;
-
-		Brain.write(GPS_time);		//4 bytes
-		Serial0.write(GPS_time);
-		Brain.write(data);	Serial0.write(data); data++;
-		Brain.write(data);	Serial0.write(data); data++;
-		Brain.write(data);	Serial0.write(data); data++;
-		Brain.write(data);	Serial0.write(data); data++;
-
-
-		Brain.write(GPS_latitude);	//4 bytes
-		Brain.write(data);	data++;
-		Brain.write(data);	data++;
-		Brain.write(data);	data++;
-		Brain.write(data);	data++;
-
-		Brain.write(GPS_longitude);	//4 bytes
-		Brain.write(data);	data++;
-		Brain.write(data);	data++;
-		Brain.write(data);	data++;
-		Brain.write(data);	data++;
-
-		Brain.write(GPS_speed);		//2 bytes
-		Brain.write(data);	data++;
-		Brain.write(data);	data++;
-
-		Brain.write(GPS_course);	//2 bytes
-		Brain.write(data);	data++;
-		Brain.write(data);
-	}
+	Sonar_calc();
 }
 
 
@@ -108,25 +193,11 @@ void CLI(char *msg, uint8_t length)
 	if     ('~' == *msg)
 	{
 		Serial0.println("Entering RC mode");
-		RC_mode();
+		//RC_mode();
 		Serial0.println("Leaving RC mode");
 	}
 
 
-
-/******************** LIDAR *****************/
-	else if('a' == *msg)	Lidar.getInfo('V');
-	else if('b' == *msg)	Lidar.getInfo('P');
-	else if('c' == *msg)	Lidar.getInfo('I');
-	else if('d' == *msg)	Lidar.laser(0);
-	else if('e' == *msg)	Lidar.laser(1);
-	else if('f' == *msg)	Lidar.timeInfo();
-	else if('r' == *msg)	Lidar.reset();
-
-	else if('g' == *msg)	Lidar.distAcq();
-	else if('h' == *msg)	Lidar.supertest();
-
-	else if('l' == *msg)	Serial0.print(LidarCount, DEC);
 
 
 /************************* Arduino-Arduino Communication *************************/
@@ -215,6 +286,14 @@ void CLI(char *msg, uint8_t length)
 		Brain.write( val.low );
 		Brain.write( val.high);
 	}
+	else if('G' == *msg)
+	{
+		GPS_print();
+	}
+	else if('H' == *msg)
+	{
+		Sonar_calc();
+	}
 
 /*******************GPS configuration *************************
 		else if('a' == *msg)	GPS.stop_feed(GPS.GGA);
@@ -243,32 +322,6 @@ void CLI(char *msg, uint8_t length)
 	Serial0.flush();
 }
 
-//TODO: clean this up...
-void RC_mode()
-{
-	char temp = ERROR;
-	Brain.write(RemoteControl);
-	delay(10);
-
-//  we need an acknowledgement, but don't freeze waiting for it
-	for(int i = 0; i < 10; i++)
-	{
-		if(Brain.available() > 0)
-		{
-			temp = Brain.read();
-			break;
-		}
-		else	delay(10);
-	}
-
-//	only proceed if we got an aknowledgement
-	while(RemoteControl == temp)
-	{
-		//TODO: wait for RF to come in, send packet immediately,
-		//      and wait for the stop byte ( ~ ) to be sent
-	}
-}
-
 
 int main(void)
 {
@@ -277,12 +330,7 @@ int main(void)
 
 	for (;;)
 	{
-		check_GPS();
-
-		check_msg();
-
-
-
+		loop();
 	}///loop()
 
 	return 0;
