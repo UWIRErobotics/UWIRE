@@ -1,13 +1,20 @@
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
+/*******************GLOBALLY USED VARIABLES************/
+#define FORCE_CONST 24000
+
 
 /********** MESSAGE HEADERS **********/
 #define ERROR          0x00
+#define RemoteControl  0x55
+
+#define FORCE_HEADER_X			0xF1
+#define FORCE_HEADER_Y			0xF2
+
 #define ArduinoMSG     0xFF
 #define ArduinoCMD     0x66
 
-#define RemoteControl  0x55
 
 #define Sonar1         0x71	// all 'Sonar#' def's are
 #define Sonar2         0x72	// also their respective
@@ -25,8 +32,6 @@
 #define GPS_longitude  0xA8
 #define GPS_RAW        0xAF	//doubt this one will ever be used
 
-#define FORCE_HEADER_X			0xF1
-#define FORCE_HEADER_Y			0xF2
 
 /********** UNIONS & STRUCTS **********/
 typedef union
@@ -59,8 +64,7 @@ typedef union
 }byte32;
 
 
-typedef struct
-{
+typedef struct {
 	uint32_t time;		  //max value = 235959000
 	uint16_t speed;
 	uint16_t course;	  //max value = 35999   **NOTE, comes in 4 OR 5 digits...
@@ -73,8 +77,11 @@ typedef struct
 }_GPS_package;
 
 
-/*******************GLOBALLY USED VARIABLES************/
+typedef struct {
+	uint8_t  angle;
+	uint16_t distance;
+	uint8_t  width;
+} LidarObj;
 
-#define FORCE_CONST 24000
 
 #endif /* GLOBALS_H_ */

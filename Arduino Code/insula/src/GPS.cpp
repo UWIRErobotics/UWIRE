@@ -21,7 +21,7 @@ _GPS::_GPS(void)
 
 	GPS_package.time       	= 0x0; // reset all values, or else
 	GPS_package.speed      	= 0x0; // the old data gets multiplied
-	//GPS_package.course     = 0x0; // by 10 and it becomes garbage
+//	GPS_package.course      = 0x0; // by 10 and it becomes garbage
 	GPS_package.latitude   	= 0x0; //
 	GPS_package.longitude  	= 0x0; //
 	GPS_package.pos_fix 	= 0x0;
@@ -40,6 +40,9 @@ char * _GPS::fill(void)
 
 	flush();
 
+	Serial0.print("COUNT = ");
+	Serial0.println(i, DEC);
+
 	return pbuffer_in;
 }
 
@@ -51,7 +54,7 @@ _GPS_package* _GPS::parse(void)
 
 	GPS_package.time       	= 0x0; // reset all values, or else
 	GPS_package.speed      	= 0x0; // the old data gets multiplied
-	//GPS_package.course     = 0x0; // by 10 and it becomes garbage
+//	GPS_package.course      = 0x0; // by 10 and it becomes garbage
 	GPS_package.latitude   	= 0x0; //
 	GPS_package.longitude  	= 0x0; //
 	GPS_package.pos_fix 	= 0x0;

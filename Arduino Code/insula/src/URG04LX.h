@@ -4,7 +4,9 @@
 #include <stddef.h>					//for "NULL"
 #include "arduino/wiring.h"			//for data types
 #include "arduino/HardwareSerial.h"	//for Serial
+#include "globals.h"
 
+extern uint16_t LidarData[512];
 
 class URG04LX : public HardwareSerial
 {
@@ -13,20 +15,23 @@ public:
    ~URG04LX(){}
 
 /* all commands are specified in the URG series comm. spec v2.0, page (6 / 19) */
-   void     getInfo  (uint8_t);	 // 'VV' & 'PP' & 'II' commands
-   void     laser    (uint8_t);	 // 'BM' & 'QT' commands
-   void     baudRate (uint32_t); // 'SS' command
-   void     distAcq  (void); // 'MD'command
-   void     setMotor (uint16_t); // 'CR' command
-   void     timeInfo (void);	 // 'TM' command, but we only support GETTING time, for now
-   void     reset    (void);	 // 'RS' command
+   void     getInfo  (uint8_t);	  // 'VV' & 'PP' & 'II' commands
+   void     laser    (uint8_t);	  // 'BM' & 'QT' commands
+   void     baudRate (uint32_t);  // 'SS' command
+   void     distAcq  (void); 	  // 'MD'command
+   void     setMotor (uint16_t);  // 'CR' command
+   void     timeInfo (void);	  // 'TM' command, but we only support GETTING time, for now
+   void     reset    (void);	  // 'RS' command
 
    void     supertest(void);
 
 
 private:
-	char     distance_msg[17];
+	void     ObjectFilter(uint16_t);
 
+	char      distance_msg [17];
+	uint16_t  LidarData    [512];
+	LidarObj  objects      [128];
 };
 
 

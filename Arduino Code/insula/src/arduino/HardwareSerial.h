@@ -4,9 +4,12 @@
 #include <inttypes.h>
 #include "Print.h"
 
-#define RX_BUFFER_SIZE  512
+#define RX_BUFFER_SIZE  256
 
 // Preinstantiate buffers & flags here for global access
+extern volatile char     URG_buffer[600];
+extern volatile uint16_t URG_counter;
+
 struct ring_buffer{
 	int           head;
 	int           tail;
@@ -14,15 +17,11 @@ struct ring_buffer{
 }extern rx_buffer0, rx_buffer1, rx_buffer2, rx_buffer3;
 
 struct USARTflags{
-	uint8_t done0 : 2;
-	uint8_t done1 : 2;
-	uint8_t done2 : 2;
-	uint8_t done3 : 2;
-}extern Serialflag;
-
-
-extern volatile uint16_t LidarCount;
-extern char     big_buffer[2048];
+	uint8_t flag0 : 2;
+	uint8_t flag1 : 2;
+	uint8_t flag2 : 2;
+	uint8_t flag3 : 2;
+}extern volatile Serialflag;
 
 
 class HardwareSerial : public Print

@@ -1,16 +1,155 @@
 #include "URG04LX.h"
 
+#define MAX_DIST	4096
+#define MIN_DIST    20
+
 
 URG04LX::URG04LX()
        : HardwareSerial(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2)
 {	// use "MS..." for 2-bit encoding, "MD..." for 3-bit
-	char msg[17] = {'M','S','0','1','0','0',	 //start step
-						    '0','6','6','8',	 //end step
-						    '0','1','1',		 //cluster count, scan interval
+	char msg[17] = {'M','S','0','1','2','8',	 //start step (128 = -90 degrees)
+						    '0','6','4','0',	 //end step   (640 = +90 degrees)
+						    '0','2','1',		 //cluster count, scan interval
 						    '0','1',0xA,'\n'}; 	 //# of scans
-
 	for(int i = 0; i < 17; i++)
 		distance_msg[i] = msg[i];
+}
+
+
+void URG04LX::supertest (void)
+{
+//  turn off regular serial reading
+	Serialflag.flag2   = 0x3;
+	URG_counter        = 0;
+	write(distance_msg);
+
+	uint8_t   lines      = 0x00;		// counts <LF>'s
+	uint16_t  bytecnt    = 0x00;		// gross byte count
+	uint16_t  meascnt    = 0x00;
+//	float     angle      = -90.703125;	// which angle does the value correspond to?
+
+//	wait for ~(1/2) data
+	while(URG_counter < 256);
+
+
+//  header (skip), ALWAYS 42 BYTES
+	for(; lines < 6; bytecnt++)
+		if( 0xA == URG_buffer[bytecnt] )	lines++;
+
+	uint8_t bob = bytecnt;
+
+//  data section
+	for(; bytecnt <= URG_counter; meascnt++, bytecnt+= 2)
+	{
+		if( (0xA == URG_buffer[bytecnt]) || (0xA == URG_buffer[bytecnt + 1]) )
+			lines++;	//skip <LF> & 'sum' characters
+
+		else
+		{
+			LidarData[meascnt] = 0;
+			LidarData[meascnt] = ( ((URG_buffer[bytecnt] - 0x30) << 6) + (URG_buffer[bytecnt + 1] - 0x30) );
+
+			Serial0.print(meascnt);
+			Serial0.print(" : ");
+			Serial0.println(LidarData[meascnt], DEC);
+
+			//angle    += 0.703125;	// = 2*[360/1024] (we use cluster size of 2)
+		}
+
+	}//for loop
+
+	Serialflag.flag2 = 0x0;		//turn ring-buffer back on
+	Serial0.print("HEADER BYTE COUNT = ");
+	Serial0.println(bob, DEC);
+	Serial0.print("TOTAL BYTE COUNT = ");
+	Serial0.println(bytecnt, DEC);
+	Serial0.print("MEASURMENT COUNT = ");
+	Serial0.println(meascnt, DEC);
+	Serial0.print("LINE COUNT = ");
+	Serial0.println(lines, DEC);
+
+	ObjectFilter(meascnt);
+}
+
+
+void URG04LX::ObjectFilter(uint16_t cnt)
+{
+	uint8_t obj = 0;	//object index
+
+
+
+	for(int i = 1; i < (cnt - 1); i++)	//first and last measurments get special treatment
+	{
+
+	}
+
+}
+
+
+void URG04LX::distAcq (void)
+{
+	uint8_t   lines      = 0x00;		// counts <LF>'s
+	uint8_t   whichbyte  = 0x00;		// high or low byte?	TODO: GET RID OF THIS, integrate into ANOTHER...
+	uint16_t  bytecnt    = 0x00;		// gross byte count
+	uint16_t  temp       = 0x00;		// stores the 'deciphered' value
+	float     angle      = 1; //-90.703125;	// which angle does the value correspond to?
+
+
+//  turn off regular serial reading
+	URG_counter        = 0;
+	Serialflag.flag2  = 0x3;
+	write(distance_msg);
+
+//	wait for ~(1/2) data
+	while(URG_counter < 256);
+
+
+//  header (skip), ALWAYS 42 BYTES
+	for(; lines < 6; bytecnt++)
+		if( 0xA == URG_buffer[bytecnt] )	lines++;
+
+	uint8_t bob = bytecnt;
+
+//  data section
+	for(bytecnt = 42; bytecnt <= URG_counter; bytecnt++)
+	{
+		if( 0xA == URG_buffer[bytecnt] )	//end of a line? skip it
+		{
+			lines++;
+			whichbyte = 0;
+		}
+
+		else
+		{
+			if(0 == whichbyte)	temp = 0;
+
+			URG_buffer[bytecnt] -=  0x30;
+			temp               <<=  6;
+			temp                +=  URG_buffer[bytecnt];
+
+			whichbyte++;
+
+//          done getting a value!
+			if(2 == whichbyte)
+			{
+				Serial0.print(angle);
+				Serial0.print(" : ");
+				Serial0.println(temp, DEC);
+
+				whichbyte = 0;
+				angle    += 1;	// = 2*[360/1024] (we use cluster size of 2)
+
+			}
+		}
+	}//for loop
+
+	Serialflag.flag2 = 0x0;		//turn ring-buffer back on
+	Serial0.print("HEADER BYTE COUNT = ");
+	Serial0.println(bob, DEC);
+	Serial0.print("TOTAL BYTE COUNT = ");
+	Serial0.println(bytecnt, DEC);
+	Serial0.print("LINE COUNT = ");
+	Serial0.println(lines, DEC);
 }
 
 
@@ -104,72 +243,6 @@ void URG04LX::baudRate(uint32_t baud)
    write(command);
 }
 
-void URG04LX::supertest(void)
-{
-	distance_msg[1] = 'D';
-	distAcq();
-	distance_msg[1] = 'S';
-
-}
-
-void URG04LX::distAcq (void)
-{
-	uint8_t  lines     = 0x00;
-	uint8_t  whichbyte = 0x00;
-	uint16_t temp      = 0x00;
-	uint16_t angle     = 100;
-
-	LidarCount = 0;
-	write(distance_msg);
-
-	while(LidarCount < 1024);	//wait for incoming data
-
-	for(uint16_t i = 0; i < LidarCount; i++)
-	{
-		switch (lines)
-		{
-			case 0:	//skip all the header stuff
-			case 1: //
-			case 2: //
-			case 3: //
-			case 4: //
-			case 5: //
-			{
-				if( 0xA == big_buffer[i] )	lines++;
-				whichbyte = 0;
-				break;
-			}
-
-			case 6:	//6....18? something like that. find out. do it.
-			case 7:
-			default:
-			{
-				if(0 == whichbyte)	temp = 0;
-
-				big_buffer[i] -= 0x30;	//decipher that byte
-				temp <<= 6;				//shift 'high' byte to the
-
-				temp += big_buffer[i];
-
-				whichbyte++;
-				if(2 == whichbyte)
-				{
-					Serial0.print(angle, DEC);
-					Serial0.print(" : ");
-					Serial0.println(temp, DEC);
-					whichbyte = 0;
-					angle++;
-				}
-			}
-
-		}//switch..case
-
-	}//for loop
-
-	flush();
-
-}
-
 
 // refer to page (14/19) for meanings
 void URG04LX::setMotor(uint16_t speed)
@@ -227,23 +300,10 @@ void URG04LX::reset(void)
 	write(msg);
 }
 
-/*
-void URG04LX::parse()
-{
-    for(uint16_t i = 0; i <= 558; i++)
-    {
-            dist = ( ( input_buffer[i*2] - 0x30 ) << 8 ) + ( input_buffer[i*2+1] - 0x30 );
-            if ( dist > MAX_DIST_MM )
-                    dist = MAX_DIST_MM;
-            if ( ( dist < 20 ) && ( i != 0 ) )
-                    dist = distances[i-1];
-            distances[i] = dist;
-    }
-}
-*/
+
+
 
 /* NOTES ON PARSING:
- *
 1x uint16_t variable "count", the FIRST BYTE indicates if incoming data is high or low (0 or 1)
  * while the rest of hte bytes indicate the INDEX (need to shift that value right 1...)
  *
@@ -251,12 +311,6 @@ void URG04LX::parse()
  * then add to another characteristic, "width", and track the "middle" angular reading
  * (that way, we send the angular position of object, distance to object, width of object)
  * and if the measuring is CLOSER, use that as the real distance (closest measurement)
- *
---> Idea; have parsing dynamic, so instead of ALWAYS needing to track 558 angular measurements,
- * the width can be adjustable (and thus, 558 is the MAX amount we'd ever have to parse)
- * depending on the amount of 'clusters' used in the measurement; this also allows for very
- * small readings (if we're suddenly interested in a very small range, be able to parse
- * 'down to' 1 single reading
  */
 
 
