@@ -61,7 +61,19 @@ typedef struct // data sent to cogzilla; integers are better!
 #define GPS_longitude  0xA8
 #define GPS_RAW        0xAF	//doubt this one will ever be used
 
+#define FORCE_HEADER_X			0xF1
+#define FORCE_HEADER_Y			0xF2
 
+
+/************Other Constants **********/
+#define CMU_RESULT_MX 0
+#define CMU_RESULT_MY 1
+#define CMU_RESULT_X1 2
+#define CMU_RESULT_Y1 3
+#define CMU_RESULT_X2 4
+#define CMU_RESULT_Y2 5
+#define CMU_RESULT_PIX 6
+#define CMU_RESULT_CONF 7
 
 
 

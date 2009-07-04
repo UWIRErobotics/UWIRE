@@ -18,7 +18,6 @@ public:
 
 private:
 	int turn_angle;
-	int turn_angle_us;
 	int drive_speed;
 	int drive_speed_setting;
 

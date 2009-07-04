@@ -26,13 +26,14 @@ HardwareSerial *Drive_Serial;
 void vehicle::setup_vehicle()
 {
 	Servo.attach(4,800,2100);
-	Drive_Serial = &Serial3;
+	Drive_Serial = &Serial1;
 	Drive_Serial->begin(9600);
 }
 
 void vehicle:: set_turn_angle(int angle)
 {
-	Servo.write(angle);
+	turn_angle = angle;
+	Servo.writeMicroseconds(angle);
 }
 
 void vehicle::set_speed(int speed)

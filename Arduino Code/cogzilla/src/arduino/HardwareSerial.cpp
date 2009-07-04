@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include "wiring.h"
 #include "wiring_private.h"
+#include "../globals.h"
 
 #include "HardwareSerial.h"
 

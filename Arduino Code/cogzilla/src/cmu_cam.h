@@ -10,6 +10,7 @@
 
 #include "arduino/HardwareSerial.h"
 #include "arduino/WProgram.h"
+#include "globals.h"
 
 class cmu_cam
 {
@@ -21,20 +22,8 @@ public:
 	void setup_cmu_cam(HardwareSerial *serial_port );
 	bool track_colour();
 
-
-
-private:
-
-
-	int mx;
-	int my;
-	int x1;
-	int	x2;
-	int y1;
-	int y2;
-	int pixels;
-	int confidence;
-
+	bool stop_sign_in_view;
+	char stop_sign_track_info[8];
 };
 
 /** OBJECT 'DECLARATION' **/
