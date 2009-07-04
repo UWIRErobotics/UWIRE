@@ -25,6 +25,8 @@
 #define GPS_longitude  0xA8
 #define GPS_RAW        0xAF	//doubt this one will ever be used
 
+#define FORCE_HEADER_X			0xF1
+#define FORCE_HEADER_Y			0xF2
 
 /********** UNIONS & STRUCTS **********/
 typedef union
@@ -64,9 +66,15 @@ typedef struct
 	uint16_t course;	  //max value = 35999   **NOTE, comes in 4 OR 5 digits...
 	uint32_t latitude;
 	uint32_t longitude;
+	uint16_t pos_fix;
+	uint16_t sats_used;
+	uint16_t HDOP;
+	uint16_t altitude;
 }_GPS_package;
 
 
+/*******************GLOBALLY USED VARIABLES************/
 
+#define FORCE_CONST 24000
 
 #endif /* GLOBALS_H_ */
