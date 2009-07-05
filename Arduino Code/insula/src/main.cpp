@@ -1,34 +1,41 @@
 #include "main.h"
 
-#define GPS_BAUD	  38400
-#define LIDAR_BAUD    250000
-#define BRAIN_BAUD    9600
-#define CONSOLE_BAUD  19200
-#define RF_BAUD       2400
+
+int main(void)
+{
+	init();
+	setup();
+
+	for (;;)	//loop()
+	{
+		check_msg();
+
+//		Sonar_calc();
+	}
+
+	return 0;
+}
 
 
 void setup()
 {
-//  start all comm links
-	Serial0.begin(CONSOLE_BAUD);  // user console
+//  start user console
+	Serial0.begin(19200);
+	Serial0.println ("Insular Cortex Console");
+
+
 	Brain.begin  (BRAIN_BAUD); 	  // Serial1
+	Serial0.print	("Brain Baud = ");  Serial0.println(BRAIN_BAUD,  DEC);
+
 	Lidar.begin  (LIDAR_BAUD);	  // Serial2
+	Serial0.print	("Lidar Baud = ");  Serial0.println(LIDAR_BAUD,  DEC);
+
 	GPS.begin    (GPS_BAUD);	  // Serial3
+	Serial0.print	("GPS Baud   = ");  Serial0.println(GPS_BAUD,    DEC);
 
-	Serial0.println("Insular Cortex Console");
-	Serial0.print("Console Baud = ");  Serial0.println(CONSOLE_BAUD, DEC);
-	Serial0.print("Arduino Baud = ");  Serial0.println(BRAIN_BAUD, DEC);
-	Serial0.print("Lidar Baud   = ");  Serial0.println(LIDAR_BAUD, DEC);
-	Serial0.print("GPS Baud     = ");  Serial0.println(GPS_BAUD, DEC);
-	Serial0.println();				   delay(500);
+	Serial0.println(); delay(500);
 }
 
-void loop()
-{
-	check_msg();
-
-//	Sonar_calc();
-}
 
 
 void check_msg(void)
@@ -80,7 +87,7 @@ void CLI(char *msg, uint8_t length)
 	if ('~' == *msg)
 	{
 		Serial0.println("Entering RC mode");
-		//RC_mode();
+		RC_mode();
 		Serial0.println("Leaving RC mode");
 	}
 
@@ -130,7 +137,7 @@ void CLI(char *msg, uint8_t length)
 		Serial0.print("0x");
 		Serial0.print(Sonar1, HEX);
 		Serial0.print(" : ");
-		Serial0.print((int) val.low);
+		Serial0.print(  (int) val.low);
 		Serial0.println((int) val.high);
 	}
 	else if('B' == *msg)
@@ -140,7 +147,7 @@ void CLI(char *msg, uint8_t length)
 		Serial0.print("0x");
 		Serial0.print(Sonar2, HEX);
 		Serial0.print(" : ");
-		Serial0.print((int) val.low);
+		Serial0.print(  (int) val.low);
 		Serial0.println((int) val.high);
 	}
 	else if('C' == *msg)
@@ -150,7 +157,7 @@ void CLI(char *msg, uint8_t length)
 		Serial0.print("0x");
 		Serial0.print(Sonar3, HEX);
 		Serial0.print(" : ");
-		Serial0.print((int) val.low);
+		Serial0.print(  (int) val.low);
 		Serial0.println((int) val.high);
 	}
 	else if('D' == *msg)
@@ -160,28 +167,26 @@ void CLI(char *msg, uint8_t length)
 		Serial0.print("0x");
 		Serial0.print(Sonar4, HEX);
 		Serial0.print(" : ");
-		Serial0.print((int) val.low);
+		Serial0.print(  (int) val.low);
 		Serial0.println((int) val.high);
 	}
-	else if('E' == *msg)	//just a test for sending text messages... doubt we'll ever use this
+	else if('E' == *msg)	//just a test for sending text messages...
 	{
-		Serial0.print("Sending that message: ");
+		Serial0.print("Sending test message: ");
 
 		char message[] = {'G','O','u','1','r','E','!', '\0'};
 
 		Serial0.write(message);
 		Serial0.println();
 
-		Brain.write( ArduinoMSG );
+		Brain.write( COMM_TEST );
 		Brain.write(  message  );
 	}
-
 	else if('F' == *msg)	//just a test for sending 16-bit value as 2x 8-bit values
 	{
 		val.container = 0x1234;
 
-		Serial0.print("0x");
-		Serial0.print(Sonar4, HEX);
+		Serial0.print("0x");	Serial0.print(Sonar4, HEX);
 		Serial0.print(" : ");
 		Serial0.print((int) val.low);
 		Serial0.print((int) val.high);
@@ -192,29 +197,27 @@ void CLI(char *msg, uint8_t length)
 		Brain.write( val.low );
 		Brain.write( val.high);
 	}
-	else if('G' == *msg)
-	{
-		GPS_print();
-	}
-	else if('H' == *msg)
-	{
-		Sonar_calc();
-	}
+	else if('G' == *msg)	GPS_print();
+	else if('H' == *msg)	Sonar_calc();
+
 
 	Serial0.println();
 	Serial0.flush();
 }
 
+#define NUM_READINGS 2
 
 void Sonar_calc()
 {
+	double obs_distance[NUM_READINGS];
+	double obs_angle   [NUM_READINGS] = {2.35619,0.7853981};
+	double x_distance  [NUM_READINGS];
+	double y_distance  [NUM_READINGS];
+	double x_force     [NUM_READINGS];
+	double y_force     [NUM_READINGS];
+
 	double cum_force_x = 0;
 	double cum_force_y = 0;
-	byte32 cogzilla_info;
-	/* Highest  = negative x
-	 * High 	= positive x
-	 * Low		= negative y
-	 * Lowest	= positive y*/
 
 	while(Serial0.read() != 'e')
 	{
@@ -223,37 +226,46 @@ void Sonar_calc()
 		for(int i=0;i<NUM_READINGS;i++)
 		{
 			obs_distance[i] = Sonar.range(Sonar1 + i); //for now this is just 0x71 and 0x72...add lidar update here.
+
 			x_distance[i] = obs_distance[i]*(cos(obs_angle[i]));
 			y_distance[i] = obs_distance[i]*(sin(obs_angle[i]));
-			x_force[i] = (FORCE_CONST/obs_distance[i]) * (x_distance[i]/obs_distance[i]);
-			y_force[i] = (FORCE_CONST/obs_distance[i]) * (y_distance[i]/obs_distance[i]);
+
+			x_force[i] = (SONAR_FORCE/obs_distance[i]) * (x_distance[i]/obs_distance[i]);
+			y_force[i] = (SONAR_FORCE/obs_distance[i]) * (y_distance[i]/obs_distance[i]);
+
 			cum_force_x += x_force[i];
 			cum_force_y += y_force[i];
 		}
-		Serial0.print (cum_force_x);
-		Serial0.print ("     ");
+		Serial0.print  ("Fx = ");
+		Serial0.print  (cum_force_x);
+		Serial0.print  (",  Fy = ");
 		Serial0.println(cum_force_y);
 
+		byte32 cogzilla_info;	cogzilla_info.container = 0;
+		/* Highest  = negative x
+		 * High 	= positive x
+		 * Low		= negative y
+		 * Lowest	= positive y*/
 
-		cogzilla_info.container = 0;
-		if (cum_force_x < -255)
-			cogzilla_info.highest = 255;
-		else if(cum_force_x > -255 && cum_force_x < 0)
-			cogzilla_info.highest = abs(cum_force_x);
-		else if(cum_force_x > 0 && cum_force_x < 255)
-			cogzilla_info.high = cum_force_x;
-		else //cum_force_X > 255
-			cogzilla_info.high = 255;
+		if 		(cum_force_x < -255)						cogzilla_info.highest = 255;
+		else if	(cum_force_x > -255 && cum_force_x < 0)		cogzilla_info.highest = abs(cum_force_x);
+		else if	(cum_force_x > 0 && cum_force_x < 255)		cogzilla_info.high    = cum_force_x;
+		else /*	(cum_force_X > 255 ) */						cogzilla_info.high    = 255;
 
-		if (cum_force_y < -255)
-			cogzilla_info.low = 255;
-		else if(cum_force_y > -255 && cum_force_y < 0)
-			cogzilla_info.low = cum_force_y;
-		else if(cum_force_y > 0 && cum_force_y < 255)
-			cogzilla_info.lowest = cum_force_y;
-		else //cum_force_y > 255
-			cogzilla_info.lowest = 255;
+		if 		(cum_force_y < -255)						cogzilla_info.low 	 = 255;
+		else if	(cum_force_y > -255 && cum_force_y < 0)		cogzilla_info.low 	 = cum_force_y;
+		else if	(cum_force_y > 0 && cum_force_y < 255)		cogzilla_info.lowest = cum_force_y;
+		else /* (cum_force_y > 255) */						cogzilla_info.lowest = 255;
 
+		Brain.write(FORCE_HEADER_X);
+		Brain.write(cogzilla_info.highest);
+		Brain.write(cogzilla_info.high);
+
+		Brain.write(FORCE_HEADER_Y);
+		Brain.write(cogzilla_info.low);
+		Brain.write(cogzilla_info.lowest);
+
+//		DEBUG ONLY
 		Serial0.print ((int)cogzilla_info.highest);
 		Serial0.print ("     ");
 		Serial0.println ((int)cogzilla_info.high);
@@ -262,13 +274,6 @@ void Sonar_calc()
 		Serial0.println ((int)cogzilla_info.lowest);
 		Serial0.println();
 		Serial0.println();
-
-		Brain.write(FORCE_HEADER_X);
-		Brain.write(cogzilla_info.highest);
-		Brain.write(cogzilla_info.high);
-		Brain.write(FORCE_HEADER_Y);
-		Brain.write(cogzilla_info.low);
-		Brain.write(cogzilla_info.lowest);
 	}
 }
 
@@ -282,60 +287,21 @@ void GPS_print()
 		//  once the checksum character ( * ) is found, 'done' goes high
 		if(Serialflag.flag3 == 0x3)
 		{
-			unsigned long temp = 0;
-			char *pbuff = GPS.fill();	//fill our 'parsing' buffer
+			 char *rawGPS = GPS.fill();//TODO: GET RID OF THIS BUFFER ENTIRELY
 
-			GPS.parse();
-			Serialflag.flag3 = 0x0;
+			_GPS_package *GPSdata = GPS.parse();	// get pointer to parsed data
+			Serialflag.flag3 = 0x0;					// turn on regular serial
 
-			//Printing out in MATLAB-friendly format
-			temp = GPS.get(GPS.time);
-			Serial0.print(temp);
-			Serial0.print(",");
-
-			/*temp = (unsigned int) GPS.get(GPS.speed);
-			Serial0.print(temp);
-			Serial0.print(",");
-
-			temp = (unsigned int) GPS.get(GPS.course);
-			Serial0.print(temp);
-			Serial0.print(",");*/
-
-			temp = GPS.get(GPS.latitude);
-			Serial0.print(temp);
-			Serial0.print(",");
-
-			temp = GPS.get(GPS.longitude);
-			Serial0.print(temp);
-			Serial0.print(",");
-
-			temp = GPS.get(GPS.pos_fix);
-			Serial0.print(temp);
-			Serial0.print(",");
-
-			temp = GPS.get(GPS.sats_used);
-			Serial0.print(temp);
-			Serial0.print(",");
-
-			temp = GPS.get(GPS.HDOP);
-			Serial0.println(temp);
+//			printing in MATLAB-friendly format
+			Serial0.print(GPSdata->time);		Serial0.print(",");
+			Serial0.print(GPSdata->course);		Serial0.print(",");
+			Serial0.print(GPSdata->latitude);	Serial0.print(",");
+			Serial0.print(GPSdata->longitude);	Serial0.print(",");
+			Serial0.print(GPSdata->pos_fix);	Serial0.print(",");
+			Serial0.print(GPSdata->sats_used);	Serial0.print(",");
+			Serial0.print(GPSdata->HDOP);		Serial0.print(",");
 		}
 	}
 
 	Serial0.println("Leaving GPS stream!");
-
-}
-
-
-int main(void)
-{
-	init();
-	setup();
-
-	for (;;)
-	{
-		loop();
-	}
-
-	return 0;
 }

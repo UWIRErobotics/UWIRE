@@ -1,9 +1,7 @@
 #ifndef URG04LX_H_
 #define URG04LX_H_
 
-#include <stddef.h>					//for "NULL"
-#include "arduino/wiring.h"			//for data types
-#include "arduino/HardwareSerial.h"	//for Serial
+#include "arduino/WProgram.h"
 #include "globals.h"
 
 extern uint16_t LidarData[512];
@@ -24,6 +22,7 @@ public:
    void     reset    (void);	  // 'RS' command
 
    void     supertest(void);
+   void     ForceCalc(uint16_t);
 
 
 private:
@@ -32,6 +31,10 @@ private:
 	char      distance_msg [17];
 	uint16_t  LidarData    [512];
 	LidarObj  objects      [128];
+
+	float    pos_force_x,  neg_force_x,
+	         pos_force_y,  neg_force_y,
+	         cumulative_x, cumulative_y;
 };
 
 

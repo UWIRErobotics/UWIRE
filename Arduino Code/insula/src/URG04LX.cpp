@@ -1,7 +1,8 @@
 #include "URG04LX.h"
 
-#define MAX_DIST	4096
-#define MIN_DIST    20
+#define MAX_DIST	4000
+#define MIN_DIST    50
+#define THRESHOLD   25
 
 
 URG04LX::URG04LX()
@@ -13,6 +14,13 @@ URG04LX::URG04LX()
 						    '0','1',0xA,'\n'}; 	 //# of scans
 	for(int i = 0; i < 17; i++)
 		distance_msg[i] = msg[i];
+
+	for(int i = 0; i < 128; i++)
+	{
+		objects[i].angle    = 0;
+		objects[i].distance = 0;
+		objects[i].width    = 0;
+	}
 }
 
 
@@ -26,7 +34,6 @@ void URG04LX::supertest (void)
 	uint8_t   lines      = 0x00;		// counts <LF>'s
 	uint16_t  bytecnt    = 0x00;		// gross byte count
 	uint16_t  meascnt    = 0x00;
-//	float     angle      = -90.703125;	// which angle does the value correspond to?
 
 //	wait for ~(1/2) data
 	while(URG_counter < 256);
@@ -36,7 +43,6 @@ void URG04LX::supertest (void)
 	for(; lines < 6; bytecnt++)
 		if( 0xA == URG_buffer[bytecnt] )	lines++;
 
-	uint8_t bob = bytecnt;
 
 //  data section
 	for(; bytecnt <= URG_counter; meascnt++, bytecnt+= 2)
@@ -49,40 +55,157 @@ void URG04LX::supertest (void)
 			LidarData[meascnt] = 0;
 			LidarData[meascnt] = ( ((URG_buffer[bytecnt] - 0x30) << 6) + (URG_buffer[bytecnt + 1] - 0x30) );
 
-			Serial0.print(meascnt);
-			Serial0.print(" : ");
-			Serial0.println(LidarData[meascnt], DEC);
+//			filter out bad useless (super small/large) data points
+			if( (LidarData[meascnt] <= MIN_DIST) || (MAX_DIST < LidarData[meascnt]) )
+				LidarData[meascnt] = MAX_DIST;
 
-			//angle    += 0.703125;	// = 2*[360/1024] (we use cluster size of 2)
+//			Serial0.print(meascnt);
+//			Serial0.print(" : ");
+//			Serial0.println(LidarData[meascnt], DEC);
 		}
-
 	}//for loop
 
 	Serialflag.flag2 = 0x0;		//turn ring-buffer back on
-	Serial0.print("HEADER BYTE COUNT = ");
+
+/*	Serial0.print("HEADER BYTE COUNT = ");
 	Serial0.println(bob, DEC);
 	Serial0.print("TOTAL BYTE COUNT = ");
 	Serial0.println(bytecnt, DEC);
 	Serial0.print("MEASURMENT COUNT = ");
 	Serial0.println(meascnt, DEC);
 	Serial0.print("LINE COUNT = ");
-	Serial0.println(lines, DEC);
+	Serial0.println(lines, DEC);	*/
 
-	ObjectFilter(meascnt);
+	//ObjectFilter(meascnt);
+	ForceCalc(meascnt);
 }
 
 
 void URG04LX::ObjectFilter(uint16_t cnt)
 {
-	uint8_t obj = 0;	//object index
+	uint8_t obj = 0; // object index
 
+	uint16_t back_diff, center_diff, forward_diff;	//differences
 
+/*
+ * Track the PREVIOUS DISTANCE to compare with the CURRENT DISTANCE, if its ABOUT the same
+ * then add to another characteristic, "width", and track the "middle" angular reading
+ * (that way, we send the angular position of object, distance to object, width of object)
+ * and if the measuring is CLOSER, use that as the real distance (closest measurement)
+ */
+	for(uint8_t i = 1; i < (cnt - 1); i++)	//first and last measurements get special treatment
+	{
+		back_diff    = abs(LidarData[i-1] - LidarData[i]  );
+		center_diff  = abs(LidarData[i-1] - LidarData[i+1]);
+		forward_diff = abs(LidarData[i+1] - LidarData[i]  );
 
-	for(int i = 1; i < (cnt - 1); i++)	//first and last measurments get special treatment
+		//TODO: simple edge-based system
+		//TODO: filter out threshold values & noise
+
+		// if part of current object,
+		// add to its width and update
+		// distance proportionally
+
+		// Object Width; if we can forsee it will
+		// be too big (or it is too big) then create
+		// a new object, even if the 2nd pass filter
+		// has to do modifications
+
+	}
+
+//  2nd PASS FILTER; go through all objects, refine
+	for(uint8_t i = 0; i <= obj; i++)
 	{
 
 	}
 
+}
+
+
+void URG04LX::ForceCalc(uint16_t num)
+{
+//  temp variables
+	float x_distance,  y_distance,
+		  x_force,     y_force;
+
+//	reset force vectors
+	pos_force_x = 0.0;
+	pos_force_y = 0.0;
+
+	neg_force_x = -0.0;
+	neg_force_y = -0.0;
+
+	float angle = -( (M_PI/2.0)+(4.0*M_PI/1024.0) );// -90.703125[deg] initial, (2)*[2PI/1024] increment
+	for(uint16_t i = 0; i < num; i++, angle += (4.0*M_PI / 1024.0))
+	{
+		x_distance = (LidarData[i]) * cos(angle);
+		y_distance = (LidarData[i]) * sin(angle);
+
+		x_force = (LIDAR_FORCE / LidarData[i]) * (x_distance / LidarData[i]);
+		y_force = (LIDAR_FORCE / LidarData[i]) * (y_distance / LidarData[i]);
+
+		Serial0.println(y_force);
+
+		if(0 < x_force)		pos_force_x += x_force;
+		else				neg_force_x -= x_force;
+
+		if(0 < y_force) 	pos_force_y += y_force;
+		else				neg_force_y -= y_force;
+	}
+
+	Serial0.println();
+	Serial0.print (pos_force_x);
+	Serial0.print ("     ");
+	Serial0.println(pos_force_y);
+
+	Serial0.println();
+	Serial0.print (neg_force_x);
+	Serial0.print ("     ");
+	Serial0.println(neg_force_y);
+
+	cumulative_x = pos_force_x + neg_force_x;
+	cumulative_y = pos_force_y + neg_force_y;
+
+	Serial0.println();
+	Serial0.print("Fx = ");	Serial0.println(cumulative_x);
+	Serial0.print("Fy = ");	Serial0.println(cumulative_y);
+
+/*	cogzilla_info.container = 0;
+	if (cum_force_x < -255)
+		cogzilla_info.highest = 255;
+	else if(cum_force_x > -255 && cum_force_x < 0)
+		cogzilla_info.highest = abs(cum_force_x);
+	else if(cum_force_x > 0 && cum_force_x < 255)
+		cogzilla_info.high = cum_force_x;
+	else //cum_force_X > 255
+		cogzilla_info.high = 255;
+
+	if (cum_force_y < -255)
+		cogzilla_info.low = 255;
+	else if(cum_force_y > -255 && cum_force_y < 0)
+		cogzilla_info.low = cum_force_y;
+	else if(cum_force_y > 0 && cum_force_y < 255)
+		cogzilla_info.lowest = cum_force_y;
+	else //cum_force_y > 255
+		cogzilla_info.lowest = 255;
+
+	Serial0.print ((int)cogzilla_info.highest);
+	Serial0.print ("     ");
+	Serial0.println ((int)cogzilla_info.high);
+	Serial0.print ((int)cogzilla_info.low);
+	Serial0.print ("     ");
+	Serial0.println ((int)cogzilla_info.lowest);
+	Serial0.println();
+	Serial0.println();*/
+
+	/*
+	Brain.write(FORCE_HEADER_X);
+	Brain.write(cogzilla_info.highest);
+	Brain.write(cogzilla_info.high);
+	Brain.write(FORCE_HEADER_Y);
+	Brain.write(cogzilla_info.low);
+	Brain.write(cogzilla_info.lowest);
+	*/
 }
 
 
@@ -251,16 +374,8 @@ void URG04LX::setMotor(uint16_t speed)
 
    switch(speed)
    {
-	   case 0:
-	   case 1:
-	   case 2:
-	   case 3:
-	   case 4:
-	   case 5:
-	   case 6:
-	   case 7:
-	   case 8:
-	   case 9:
+	   case 0:	   case 1:	   case 2:	   case 3:	   case 4:
+	   case 5:	   case 6:	   case 7:	   case 8:	   case 9:
 	   {
 		   command[3] = speed + 48;
 		   break;
@@ -293,6 +408,7 @@ void URG04LX::timeInfo (void)
 	write(msg);
 }
 
+
 void URG04LX::reset(void)
 {
 	char msg[4] = {'R','S',0xA,'\n'};
@@ -300,18 +416,6 @@ void URG04LX::reset(void)
 	write(msg);
 }
 
-
-
-
-/* NOTES ON PARSING:
-1x uint16_t variable "count", the FIRST BYTE indicates if incoming data is high or low (0 or 1)
- * while the rest of hte bytes indicate the INDEX (need to shift that value right 1...)
- *
---> Track the PREVIOUS DISTANCE to compare with the CURRENT DISTANCE, if its ABOUT the same
- * then add to another characteristic, "width", and track the "middle" angular reading
- * (that way, we send the angular position of object, distance to object, width of object)
- * and if the measuring is CLOSER, use that as the real distance (closest measurement)
- */
 
 
 /** OBJECT DECLARATION **/
