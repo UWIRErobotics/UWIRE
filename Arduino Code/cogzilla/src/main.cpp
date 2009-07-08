@@ -7,21 +7,10 @@ bool timer_var = 0;
 
 byte32 insula_info;
 bool new_sonar_data = false;
-bool pin_mode = true;
 
 void virtual_timer()
 {
 	timer_var = true;
-	/*if (pin_mode)
-	{
-		digitalWrite(53,HIGH);
-		pin_mode = false;
-	}
-	else
-	{
-		digitalWrite(53,LOW);
-		pin_mode = true;
-	}*/
 
 }
 
@@ -162,12 +151,12 @@ void Sonar_Drive()
 
 			if (force_x < 0)
 			{
-				steering_angle = map (force_x,-255,0,900,1300);
+				steering_angle = map (force_x,-255,0,1800,1300);
 				neuro_bot.set_turn_angle(steering_angle);
 			}
 			else
 			{
-				steering_angle = map (force_x,255,0,1800,1300);
+				steering_angle = map (force_x,255,0,900,1300);
 				neuro_bot.set_turn_angle(steering_angle);
 			}
 			new_sonar_data = false;
@@ -212,6 +201,9 @@ void CLI()
 		MsTimer2::stop();
 		Serial0.println("Exiting Cam Processing");
 	}
+
+	if (input == 'd')
+		rc_drive();
 
 	if (input=='s')
 	{
