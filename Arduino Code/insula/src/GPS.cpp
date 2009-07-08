@@ -11,144 +11,119 @@ _GPS::_GPS(void)
 	for(int i = 0; i < 25; i++)
 	{
 		buffer_out[i] = command_template[i];
-		buffer_in[i]  = 0x0;
+		GPS_buffer[i]  = 0x0;
 	}
 	for(int i = 25; i < 75; i++)
-		buffer_in[i]  = 0x0;
+		GPS_buffer[i]  = 0x0;
 
-	pbuffer_in  = &buffer_in[0];
 	pbuffer_out = &buffer_out[0];
 
 	GPS_package.time       	= 0x0; // reset all values, or else
 	GPS_package.speed      	= 0x0; // the old data gets multiplied
-//	GPS_package.course      = 0x0; // by 10 and it becomes garbage
+	GPS_package.course      = 0x0; // by 10 and it becomes garbage
 	GPS_package.latitude   	= 0x0; //
 	GPS_package.longitude  	= 0x0; //
-	GPS_package.pos_fix 	= 0x0;
-	GPS_package.sats_used 	= 0x0;
-	GPS_package.HDOP		= 0x0;
-	GPS_package.altitude	= 0x0;
+//	GPS_package.pos_fix 	= 0x0;
+//	GPS_package.sats_used 	= 0x0;
+//	GPS_package.HDOP		= 0x0;
+//	GPS_package.altitude	= 0x0;
 }
 
 
-char * _GPS::fill(void)
-{
-	byte i = 0x00;
-
-	for(; available() > 0; i++)
-		buffer_in[i] = read();
-
-	flush();
-
-	Serial0.print("COUNT = ");
-	Serial0.println(i, DEC);
-
-	return pbuffer_in;
-}
-
-
-_GPS_package* _GPS::parse(void)
+void _GPS::parse(void)
 {
 	byte index = 0x00;
 	byte comma = 0x00;
 
 	GPS_package.time       	= 0x0; // reset all values, or else
 	GPS_package.speed      	= 0x0; // the old data gets multiplied
-//	GPS_package.course      = 0x0; // by 10 and it becomes garbage
+	GPS_package.course      = 0x0; // by 10 and it becomes garbage
 	GPS_package.latitude   	= 0x0; //
 	GPS_package.longitude  	= 0x0; //
-	GPS_package.pos_fix 	= 0x0;
-	GPS_package.sats_used 	= 0x0;
-	GPS_package.HDOP		= 0x0;
-	GPS_package.altitude	= 0x0;
+//	GPS_package.pos_fix 	= 0x0;
+//	GPS_package.sats_used 	= 0x0;
+//	GPS_package.HDOP		= 0x0;
+//	GPS_package.altitude	= 0x0;
 
 	do
 	{
-		///Serial0.print(buffer_in[index]);
-		if(seperator == buffer_in[index])
-		{
+		///Serial0.print(GPS_buffer[index]);
+		if(',' == GPS_buffer[index])
 			comma++;
-		}
-		else if ('.' != buffer_in[index])	//ignore decimals
+
+		else if ('.' != GPS_buffer[index])	//ignore decimals
 		{
 			switch(comma)
 			{
 				case 0 :	//message ID
 				{
 					char header[6] = {'$','G','P','G','G','A'};
-					if(buffer_in[index] != header[index])
-					{
+					if(GPS_buffer[index] != header[index])
 						Serial0.println("Header mismatch!");
-						return NULL;
-					}
+
 					break;
 				}
 				case 1://time
 				{
 					GPS_package.time *= 10;
-					GPS_package.time += (buffer_in[index] - 48);
+					GPS_package.time += (GPS_buffer[index] - 48);
 					break;
 				}
 				case 2://latitude
 				{
 					GPS_package.latitude *= 10;
-					GPS_package.latitude += (buffer_in[index] - 48);
+					GPS_package.latitude += (GPS_buffer[index] - 48);
 					break;
 				}
 				case 3://latitude indicator
 				{
-					if('N' != buffer_in[index])
-					{
+					if('N' != GPS_buffer[index])
 						Serial0.println("Latitude heading incorrect!");
-						return NULL;
-					}
+
 					break;
 				}
 				case 4://longitude
 				{
 					GPS_package.longitude *= 10;
-					GPS_package.longitude += (buffer_in[index] - 48);
+					GPS_package.longitude += (GPS_buffer[index] - 48);
 					break;
 				}
 
 				case 5://longitude indicator
 				{
-					if('W' != buffer_in[index])
-					{
+					if('W' != GPS_buffer[index])
 						Serial0.println("Longitude heading incorrect!");
-						return NULL;
-					}
+
 					break;
 				}
-
+/*
 				case 6://positive fix
 				{
 					GPS_package.pos_fix *=10;
-					GPS_package.pos_fix += (buffer_in[index] - 48);
+					GPS_package.pos_fix += (GPS_buffer[index] - 48);
 					break;
 				}
 				case 7: //satellites used
 				{
 					GPS_package.sats_used *=10;
-					GPS_package.sats_used += (buffer_in[index] - 48);
+					GPS_package.sats_used += (GPS_buffer[index] - 48);
 					break;
 				}
 				case 8: //satellites used
 				{
 					GPS_package.HDOP *=10;
-					GPS_package.HDOP += (buffer_in[index] - 48);
+					GPS_package.HDOP += (GPS_buffer[index] - 48);
 					break;
 				}
 				case 9:		//date
 				case 10:	//magnetic variation
 				case 12:    //checksum (disabled)
-				default:
+*/				default:
 				{
-					return pGPS_package;
 					break;
 				}
 			}//switch...case
-		}//separator != buffer_in[index]
+		}//separator != GPS_buffer[index]
 		index++;
 
 		//Serial0.print("Index:");
@@ -160,15 +135,15 @@ _GPS_package* _GPS::parse(void)
 	//PARSING OF RMC Packet Removed
 	/*do
 	{
-		if(seperator == buffer_in[index])	comma++;
-		else if ('.' != buffer_in[index])	//ignore decimals
+		if(seperator == GPS_buffer[index])	comma++;
+		else if ('.' != GPS_buffer[index])	//ignore decimals
 		{
 			switch(comma)
 			{
 			case 0 :	//message ID
 			{
 				char header[6] = {'$','G','P','R','M','C'};
-				if(buffer_in[index] != header[index])
+				if(GPS_buffer[index] != header[index])
 				{
 					Serial0.println("Header mismatch!");
 					return NULL;
@@ -179,13 +154,13 @@ _GPS_package* _GPS::parse(void)
 			case 1://time
 			{
 				GPS_package.time *= 10;
-				GPS_package.time += (buffer_in[index] - 48);
+				GPS_package.time += (GPS_buffer[index] - 48);
 				break;
 			}
 
 			case 2://status
 			{
-				if('A' != buffer_in[index])
+				if('A' != GPS_buffer[index])
 				{
 					Serial0.println("Status invalid!");
 					return NULL;
@@ -196,13 +171,13 @@ _GPS_package* _GPS::parse(void)
 			case 3://latitude
 			{
 				GPS_package.latitude *= 10;
-				GPS_package.latitude += (buffer_in[index] - 48);
+				GPS_package.latitude += (GPS_buffer[index] - 48);
 				break;
 			}
 
 			case 4://latitude indicator
 			{
-				if('N' != buffer_in[index])
+				if('N' != GPS_buffer[index])
 				{
 					Serial0.println("Latitude heading incorrect!");
 					return NULL;
@@ -213,13 +188,13 @@ _GPS_package* _GPS::parse(void)
 			case 5://longitude
 			{
 				GPS_package.longitude *= 10;
-				GPS_package.longitude += (buffer_in[index] - 48);
+				GPS_package.longitude += (GPS_buffer[index] - 48);
 				break;
 			}
 
 			case 6://longitude indicator
 			{
-				if('W' != buffer_in[index])
+				if('W' != GPS_buffer[index])
 				{
 					Serial0.println("Longitude heading incorrect!");
 					return NULL;
@@ -230,13 +205,13 @@ _GPS_package* _GPS::parse(void)
 			case 7://speed
 			{
 				GPS_package.speed *= 10;
-				GPS_package.speed += (buffer_in[index] - 48);
+				GPS_package.speed += (GPS_buffer[index] - 48);
 				break;
 			}
 			case 8://course
 			{
 				GPS_package.course *= 10;
-				GPS_package.course += (buffer_in[index] - 48);
+				GPS_package.course += (GPS_buffer[index] - 48);
 				break;
 			}
 
@@ -250,12 +225,10 @@ _GPS_package* _GPS::parse(void)
 			}
 			}//switch...case
 
-		}//separator != buffer_in[index]
+		}//',' != GPS_buffer[index]
 
 		index++;
 	} while(comma <= 8);*/
-
-	return pGPS_package;
 }
 
 
@@ -264,21 +237,31 @@ unsigned long _GPS::get(data_types type)
 	switch (type)
 	{
 		case time:
+		{
 			return GPS_package.time;
 			break;
+		}
 		case speed:
+		{
 			return GPS_package.speed;
 			break;
+		}
 		case course:
+		{
 			return GPS_package.course;
 			break;
+		}
 		case latitude:
+		{
 			return GPS_package.latitude;
 			break;
+		}
 		case longitude:
+		{
 			return GPS_package.longitude;
 			break;
-		case pos_fix:
+		}
+/*		case pos_fix:
 			return GPS_package.pos_fix;
 			break;
 		case sats_used:
@@ -289,6 +272,8 @@ unsigned long _GPS::get(data_types type)
 			break;
 		case altitude:
 			return GPS_package.altitude;
+			break;	*/
+		default:
 			break;
 	}
 	return 0;	//should never get here!

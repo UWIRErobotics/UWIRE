@@ -3,7 +3,7 @@
 
 #include "arduino/WProgram.h"
 #include "arduino/VirtualWire.h"
-#include "globals.h"
+#include "arduino/globals.h"
 #include "ArduinoLink.h"
 #include "GPS.h"
 #include "URG04LX.h"
@@ -16,7 +16,6 @@ void check_msg	();
 void RC_mode	() {}
 void Lidar_Send ();
 void Sonar_calc	();
-void GPS_print	();
 
 void setup		();
 int  main		();

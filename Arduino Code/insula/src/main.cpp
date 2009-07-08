@@ -8,9 +8,9 @@ int main(void)
 
 	do
 	{
-//		check_msg();
+		check_msg();
 
-		Lidar_Send();
+//		Lidar_Send();
 
 //		Sonar_calc();
 	} while(1);
@@ -60,10 +60,17 @@ void check_msg(void)
 		CLI((char *) buff_rf, len_rf);	*/
 
 	if(Lidar.available() > 0)
-		Serial0.write( Lidar.read() );
+	{
+		while(Lidar.available() > 0)
+			Serial0.write( Lidar.read() );
+	}
 
-//	if(GPS.available() > 0)
-//		Serial0.write( GPS.read() );
+
+	if(GPS.available() > 0)
+	{
+		while(GPS.available() > 0)
+			Serial0.write( GPS.read() );
+	}
 }
 
 
@@ -299,31 +306,3 @@ void Sonar_calc()
 	}
 }
 
-
-void GPS_print()
-{
-	Serial0.flush();
-	Serial0.println("Beginning GPS Stream!");
-	while(Serial0.read() != 'e')
-	{
-		//  once the checksum character ( * ) is found, 'done' goes high
-		if(Serialflag.flag3 == 0x3)
-		{
-			char *rawGPS = GPS.fill();	//TODO: GET RID OF THIS BUFFER ENTIRELY
-
-			_GPS_package *GPSdata = GPS.parse();	// get pointer to parsed data
-			Serialflag.flag3 = 0x0;					// turn on regular serial
-
-//			printing in MATLAB-friendly format
-			Serial0.print(GPSdata->time);		Serial0.print(",");
-			Serial0.print(GPSdata->course);		Serial0.print(",");
-			Serial0.print(GPSdata->latitude);	Serial0.print(",");
-			Serial0.print(GPSdata->longitude);	Serial0.print(",");
-			Serial0.print(GPSdata->pos_fix);	Serial0.print(",");
-			Serial0.print(GPSdata->sats_used);	Serial0.print(",");
-			Serial0.print(GPSdata->HDOP);		Serial0.print(",");
-		}
-	}
-
-	Serial0.println("Leaving GPS stream!");
-}

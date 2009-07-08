@@ -1,12 +1,11 @@
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
-
 /********** COMM. LINKS **********/
 #define RF_BAUD       2400
 #define BRAIN_BAUD    9600
 #define LIDAR_BAUD    250000
-#define GPS_BAUD	  9600
+#define GPS_BAUD	  38400
 
 
 /********** FORCE CONSTANTS **********/
@@ -77,10 +76,10 @@ typedef struct {
 	uint16_t course;	  //max value = 35999   **NOTE, comes in 4 OR 5 digits...
 	uint32_t latitude;
 	uint32_t longitude;
-	uint16_t pos_fix;
-	uint16_t sats_used;
-	uint16_t HDOP;
-	uint16_t altitude;
+//	uint16_t pos_fix;
+//	uint16_t sats_used;
+//	uint16_t HDOP;
+//	uint16_t altitude;
 }_GPS_package;
 
 typedef struct {

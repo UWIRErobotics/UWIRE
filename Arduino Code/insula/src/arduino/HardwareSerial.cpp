@@ -10,12 +10,17 @@ ring_buffer rx_buffer0  = { 0, 0, {0} };
 ring_buffer rx_buffer1  = { 0, 0, {0} };
 ring_buffer rx_buffer2  = { 0, 0, {0} };
 ring_buffer rx_buffer3  = { 0, 0, {0} };
-
-
-// UWIRE buffers
 volatile USARTflags Serialflag = {0,0,0,0};
-volatile char GPS_buffer[128]  = { 0x00 };		volatile uint16_t GPS_counter = 0;
-volatile char URG_buffer[600]  = { 0x00 };		volatile uint16_t URG_counter = 0;
+
+// GPS buffers
+volatile unsigned char 	GPS_buffer[128] = {0x00};
+volatile uint16_t 		GPS_counter 	=  0x00;
+volatile uint8_t 		comma 			=  0x00;
+		_GPS_package 	GPS_package     = {0,0,0,0,0};
+
+// LIDAR buffers
+volatile unsigned char 	URG_buffer[600] = {0x00};
+volatile uint16_t 		URG_counter 	=  0x00;
 
 
 // Constructors ////////////////////////////////////////////////////////////////
@@ -88,6 +93,13 @@ void HardwareSerial::write(uint8_t c) {
 	*_udr = c;
 }
 
+//	(&rx_buffer1, &UBRR1H, &UBRR1L, &, &UCSR1B, &, RXEN1, TXEN1, RXCIE1, )
+void BrainWrite(uint8_t c) {
+
+	while (! (UCSR1A & (1 << UDRE1)) ); //wait for outgoing buffer to be empty
+
+	UDR1 = c;
+}
 
 /*********************************************************************************************/
 inline void store_char(unsigned char c, ring_buffer *rx_buffer) {
@@ -144,7 +156,114 @@ SIGNAL(SIG_USART3_RECV)
 {
 	unsigned char c = UDR3;
 
-	store_char(c, &rx_buffer3);
+//	start of new packet
+	if ('$' == c)
+	{
+		comma       	 = 0x0;
+		GPS_counter 	 = 0x0;
+		Serialflag.flag3 = 0x0;
 
-	if('*' == c)		Serialflag.flag3 = 0x3;
+		GPS_package.time      = 0x00;
+		GPS_package.speed     = 0x00;
+		GPS_package.course    = 0x00;
+		GPS_package.latitude  = 0x00;
+		GPS_package.longitude = 0x00;
+	}
+
+	GPS_buffer[GPS_counter] = c;
+
+	if		(',' == c)	comma++;
+
+	else if (0xA == c)	//end of packet
+	{
+		Serialflag.flag3 = 0x3;
+
+		for(uint8_t i = 0; i <= GPS_counter; i++)	//DEBUG ONLY
+			Serial0.print(GPS_buffer[i]);
+	}
+
+	else if ('.' != c)	//ignore decimals
+	{
+		switch(comma)
+		{
+			case 0 :	//message ID
+			{
+				char header[6] = {'$','G','P','R','M','C'};
+
+				if(c != header[GPS_counter])
+					Serial0.println("Header mismatch!");
+
+				break;
+			}
+
+			case 1://time
+			{
+				GPS_package.time *= 10;
+				GPS_package.time += (c - 48);
+				break;
+			}
+
+			case 2://status
+			{
+				if('A' != c)
+					Serial0.println("Status invalid!");
+
+				break;
+			}
+
+			case 3://latitude
+			{
+				GPS_package.latitude *= 10;
+				GPS_package.latitude += (c - 48);
+				break;
+			}
+
+			case 4://latitude indicator
+			{
+				if('N' != c)
+					Serial0.println("Latitude heading incorrect!");
+
+				break;
+			}
+
+			case 5://longitude
+			{
+				GPS_package.longitude *= 10;
+				GPS_package.longitude += (c - 48);
+				break;
+			}
+
+			case 6://longitude indicator
+			{
+				if('W' != c)
+					Serial0.println("Longitude heading incorrect!");
+
+				break;
+			}
+
+			case 7://speed
+			{
+				GPS_package.speed *= 10;
+				GPS_package.speed += (c - 48);
+				break;
+			}
+
+			case 8:		//course
+			{
+				GPS_package.course *= 10;
+				GPS_package.course += (c - 48);
+				break;
+			}
+
+			case 9:		//date
+			case 10:	//magnetic variation
+			default:
+			{
+				break;
+			}
+		}//switch...case
+	}//separator != buffer_in[index]
+
+
+	GPS_counter++;
 }

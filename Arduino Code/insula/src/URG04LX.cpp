@@ -45,9 +45,9 @@ byte32 URG04LX::supertest (void)
 
 uint16_t URG04LX::distAcq (void)
 {
-	uint8_t   lines   = 0x00;	// counts <LF>'s
-	uint16_t  bytecnt = 0x00;	// gross bytes
-	uint16_t  meascnt = 0x00;	// parsed bytes
+	uint8_t  lines   = 0x00;	// counts <LF>'s
+	uint16_t bytecnt = 0x00;	// gross bytes
+	uint16_t meascnt = 0x00;	// parsed bytes
 
 //  turn off regular serial reading
 	URG_counter      = 0x0;
@@ -144,7 +144,7 @@ byte32 URG04LX::ForceCalc(uint16_t num)
 	double x_distance, y_distance, raw_distance;
 	double x_force,    y_force;
 
-//	angle measurment; 0[deg] is to our right, and we start one step behind
+//	angle measurment; 0[deg] is to our right, and we start one step behind that
 	double 	incre  = (4.0*M_PI / 1024.0),  // (2)*[2PI/1024] increment
 			inital = -incre;
 
@@ -222,7 +222,9 @@ void URG04LX::laser(uint8_t mode)
 {
 	char msg[4] = {'B','M',0x0A,'\n'};
 
-	if (!mode)	{	msg[0] = 'Q';	msg[1] = 'T';	}
+	if(!mode)
+	{	msg[0] = 'Q';
+		msg[1] = 'T';	}
 
 	write(msg);
 }

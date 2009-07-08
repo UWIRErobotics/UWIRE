@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include "arduino/wiring.h"
 #include "arduino/Wire.h"
+#include "arduino/globals.h"
 /***** http://www.robot-electronics.co.uk/htm/srf08tech.html *****/
 
 

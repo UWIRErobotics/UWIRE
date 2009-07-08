@@ -4,7 +4,7 @@
 #include <stddef.h>					//for "NULL"
 #include "arduino/wiring.h"			//for data types
 #include "arduino/HardwareSerial.h"	//for Serial
-#include "globals.h"				//for UWIRE data types
+#include "arduino/globals.h"		//for UWIRE data types
 
 class ArduinoLink : public HardwareSerial
 {

@@ -2,7 +2,7 @@
 #define URG04LX_H_
 
 #include "arduino/WProgram.h"
-#include "globals.h"
+#include "arduino/globals.h"
 
 
 class URG04LX : public HardwareSerial
