@@ -4,7 +4,6 @@
 #include "arduino/WProgram.h"
 #include "globals.h"
 
-extern uint16_t LidarData[512];
 
 class URG04LX : public HardwareSerial
 {
@@ -16,25 +15,22 @@ public:
    void     getInfo  (uint8_t);	  // 'VV' & 'PP' & 'II' commands
    void     laser    (uint8_t);	  // 'BM' & 'QT' commands
    void     baudRate (uint32_t);  // 'SS' command
-   void     distAcq  (void); 	  // 'MD'command
+   uint16_t distAcq  (void); 	  // 'MD'command
    void     setMotor (uint16_t);  // 'CR' command
    void     timeInfo (void);	  // 'TM' command, but we only support GETTING time, for now
    void     reset    (void);	  // 'RS' command
 
-   void     supertest(void);
-   void     ForceCalc(uint16_t);
+   byte32    supertest(void);
 
 
 private:
-	void     ObjectFilter(uint16_t);
+	uint8_t ObjectFilter(uint16_t);
+	byte32  ForceCalc   (uint16_t);
 
-	char      distance_msg [17];
-	uint16_t  LidarData    [512];
-	LidarObj  objects      [128];
-
-	float    pos_force_x,  neg_force_x,
-	         pos_force_y,  neg_force_y,
-	         cumulative_x, cumulative_y;
+	char       distance_msg [17];	//outgoing message
+	uint16_t   LidarData    [512];
+	LidarObj   objects  	   [128];
+	signed int cumulative_x, cumulative_y;
 };
 
 

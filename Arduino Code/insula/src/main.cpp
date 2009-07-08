@@ -6,12 +6,14 @@ int main(void)
 	init();
 	setup();
 
-	for (;;)	//loop()
+	do
 	{
-		check_msg();
+//		check_msg();
+
+		Lidar_Send();
 
 //		Sonar_calc();
-	}
+	} while(1);
 
 	return 0;
 }
@@ -23,36 +25,27 @@ void setup()
 	Serial0.begin(19200);
 	Serial0.println ("Insular Cortex Console");
 
-
 	Brain.begin  (BRAIN_BAUD); 	  // Serial1
-	Serial0.print	("Brain Baud = ");  Serial0.println(BRAIN_BAUD,  DEC);
+	Serial0.print ("Brain Baud = ");  Serial0.println(BRAIN_BAUD, DEC);
 
 	Lidar.begin  (LIDAR_BAUD);	  // Serial2
-	Serial0.print	("Lidar Baud = ");  Serial0.println(LIDAR_BAUD,  DEC);
+	Serial0.print ("Lidar Baud = ");  Serial0.println(LIDAR_BAUD, DEC);
 
 	GPS.begin    (GPS_BAUD);	  // Serial3
-	Serial0.print	("GPS Baud   = ");  Serial0.println(GPS_BAUD,    DEC);
+	Serial0.print ("GPS   Baud = ");  Serial0.println(GPS_BAUD,   DEC);
 
-	Serial0.println(); delay(500);
+	Serial0.println(); delay(400);
 }
 
 
 
 void check_msg(void)
 {
-//  check Lidar
-	if(Lidar.available() > 0)
-		Serial0.write( Lidar.read() );
-
-	if(GPS.available() > 0)
-		Serial0.write( GPS.read() );
-
-//  check user console
-	char buff_console [VW_MAX_MESSAGE_LEN];	//same size as RF buffer, I guess
-
 	if(Serial0.available() > 0)
 	{
+		char 	buff_console [VW_MAX_MESSAGE_LEN];	//same size as RF buffer, I guess
 		uint8_t len_console = 0x00;
+
 		for(; Serial0.available() > 0; len_console++)
 			buff_console[len_console] = Serial0.read();
 
@@ -65,6 +58,12 @@ void check_msg(void)
 
 	if(vw_get_message(buff_rf, &len_rf))
 		CLI((char *) buff_rf, len_rf);	*/
+
+	if(Lidar.available() > 0)
+		Serial0.write( Lidar.read() );
+
+//	if(GPS.available() > 0)
+//		Serial0.write( GPS.read() );
 }
 
 
@@ -95,15 +94,12 @@ void CLI(char *msg, uint8_t length)
 	else if('a' == *msg)	Lidar.getInfo('V');
 	else if('b' == *msg)	Lidar.getInfo('P');
 	else if('c' == *msg)	Lidar.getInfo('I');
-	else if('d' == *msg)	Lidar.laser(0);
-	else if('e' == *msg)	Lidar.laser(1);
+	else if('d' == *msg)	Lidar.laser  ( 0 );
+	else if('e' == *msg)	Lidar.laser  ( 1 );
 	else if('f' == *msg)	Lidar.timeInfo();
 	else if('r' == *msg)	Lidar.reset();
 
-	else if('g' == *msg)	Lidar.distAcq();
-	else if('h' == *msg)	Lidar.supertest();
-
-	else if('l' == *msg)	Serial0.print(URG_counter, DEC);
+	else if('g' == *msg)	Lidar.supertest();
 
 /*******************GPS configuration *************************/
 	else if('1' == *msg)	GPS.stop_feed(GPS.GGA);
@@ -119,14 +115,14 @@ void CLI(char *msg, uint8_t length)
 	else if('%' == *msg)	GPS.start_feed(GPS.RMC, 1, true);
 	else if('^' == *msg)	GPS.start_feed(GPS.VTG, 1, true);
 
-/*  void set_param(long baud, byte data_bits, boolean stop, byte parity)
+//  void set_param(long baud, byte data_bits, boolean stop, byte parity)
 	else if('G' == *msg)	GPS.set_param(1200,  8, true, 0);
 	else if('H' == *msg)	GPS.set_param(2400,  8, true, 0);
 	else if('I' == *msg)	GPS.set_param(4800,  8, true, 0);
 	else if('J' == *msg)	GPS.set_param(9600,  8, true, 0);
 	else if('K' == *msg)	GPS.set_param(19200, 8, true, 0);
 	else if('L' == *msg)	GPS.set_param(38400, 8, true, 0);
-*/
+
 
 
 /************************* I2C Sonar *************************/
@@ -197,13 +193,39 @@ void CLI(char *msg, uint8_t length)
 		Brain.write( val.low );
 		Brain.write( val.high);
 	}
-	else if('G' == *msg)	GPS_print();
-	else if('H' == *msg)	Sonar_calc();
+//	else if('G' == *msg)	GPS_print();
+//	else if('H' == *msg)	Sonar_calc();
 
 
 	Serial0.println();
 	Serial0.flush();
 }
+
+
+void Lidar_Send()
+{
+	byte32 cogzilla_info = Lidar.supertest();
+
+	Brain.write(FORCE_HEADER_X);
+	Brain.write(cogzilla_info.highest);
+	Brain.write(cogzilla_info.high);
+	Brain.write(FORCE_HEADER_Y);
+	Brain.write(cogzilla_info.low);
+	Brain.write(cogzilla_info.lowest);
+
+	Serial0.print ((int)cogzilla_info.highest);
+	Serial0.print ("     ");
+	Serial0.println ((int)cogzilla_info.high);
+	Serial0.print ((int)cogzilla_info.low);
+	Serial0.print ("     ");
+	Serial0.println ((int)cogzilla_info.lowest);
+	Serial0.println();
+	Serial0.println();
+
+	delay(25);
+}
+
+
 
 #define NUM_READINGS 2
 
@@ -227,14 +249,14 @@ void Sonar_calc()
 		{
 			obs_distance[i] = Sonar.range(Sonar1 + i); //for now this is just 0x71 and 0x72...add lidar update here.
 
-			x_distance[i] = obs_distance[i]*(cos(obs_angle[i]));
-			y_distance[i] = obs_distance[i]*(sin(obs_angle[i]));
+			x_distance[i] = obs_distance[i] * (cos(obs_angle[i]));
+			y_distance[i] = obs_distance[i] * (sin(obs_angle[i]));
 
-			x_force[i] = (SONAR_FORCE/obs_distance[i]) * (x_distance[i]/obs_distance[i]);
-			y_force[i] = (SONAR_FORCE/obs_distance[i]) * (y_distance[i]/obs_distance[i]);
+			x_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (x_distance[i]/obs_distance[i]);
+			y_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (y_distance[i]/obs_distance[i]);
 
-			cum_force_x += x_force[i];
-			cum_force_y += y_force[i];
+			cum_force_x  += x_force[i];
+			cum_force_y  += y_force[i];
 		}
 		Serial0.print  ("Fx = ");
 		Serial0.print  (cum_force_x);
@@ -287,7 +309,7 @@ void GPS_print()
 		//  once the checksum character ( * ) is found, 'done' goes high
 		if(Serialflag.flag3 == 0x3)
 		{
-			 char *rawGPS = GPS.fill();//TODO: GET RID OF THIS BUFFER ENTIRELY
+			char *rawGPS = GPS.fill();	//TODO: GET RID OF THIS BUFFER ENTIRELY
 
 			_GPS_package *GPSdata = GPS.parse();	// get pointer to parsed data
 			Serialflag.flag3 = 0x0;					// turn on regular serial

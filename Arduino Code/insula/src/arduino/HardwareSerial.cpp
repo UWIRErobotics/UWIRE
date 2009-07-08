@@ -10,14 +10,12 @@ ring_buffer rx_buffer0  = { 0, 0, {0} };
 ring_buffer rx_buffer1  = { 0, 0, {0} };
 ring_buffer rx_buffer2  = { 0, 0, {0} };
 ring_buffer rx_buffer3  = { 0, 0, {0} };
-volatile USARTflags  Serialflag  = { 0, 0, 0, 0 };
 
 
 // UWIRE buffers
-volatile char     GPS_buffer[128] = {0x00};
-volatile uint16_t GPS_counter     = 0;
-volatile char     URG_buffer[600] = {0x00};
-volatile uint16_t URG_counter     = 0;
+volatile USARTflags Serialflag = {0,0,0,0};
+volatile char GPS_buffer[128]  = { 0x00 };		volatile uint16_t GPS_counter = 0;
+volatile char URG_buffer[600]  = { 0x00 };		volatile uint16_t URG_counter = 0;
 
 
 // Constructors ////////////////////////////////////////////////////////////////

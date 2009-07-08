@@ -7,14 +7,15 @@
 #define RX_BUFFER_SIZE  256
 
 // Preinstantiate buffers & flags here for global access
-extern volatile char     URG_buffer[600];
-extern volatile uint16_t URG_counter;
+extern volatile char     GPS_buffer[128], URG_buffer[600];
+extern volatile uint16_t GPS_counter,     URG_counter;
 
 struct ring_buffer{
 	int           head;
 	int           tail;
 	unsigned char buffer[RX_BUFFER_SIZE];
 }extern rx_buffer0, rx_buffer1, rx_buffer2, rx_buffer3;
+
 
 struct USARTflags{
 	uint8_t flag0 : 2;

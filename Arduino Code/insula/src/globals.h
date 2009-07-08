@@ -6,12 +6,12 @@
 #define RF_BAUD       2400
 #define BRAIN_BAUD    9600
 #define LIDAR_BAUD    250000
-#define GPS_BAUD	  38400
+#define GPS_BAUD	  9600
 
 
 /********** FORCE CONSTANTS **********/
 #define SONAR_FORCE 24000
-#define LIDAR_FORCE 24000
+#define LIDAR_FORCE 16000
 
 
 /********** MESSAGE HEADERS **********/
@@ -19,8 +19,8 @@
 #define COMM_TEST      0xFF
 #define RemoteControl  0x55
 
-#define FORCE_HEADER_X	0xF1
-#define FORCE_HEADER_Y	0xF2
+#define FORCE_HEADER_X 0xF1
+#define FORCE_HEADER_Y 0xF2
 
 #define Sonar1         0x71	// all 'Sonar#' def's are
 #define Sonar2         0x72	// also their respective
@@ -72,7 +72,7 @@ typedef union
 
 /********** STRUCTS **********/
 typedef struct {
-	uint32_t time; //max value = 235959000
+	uint32_t time; 		  //max value = 235959000
 	uint16_t speed;
 	uint16_t course;	  //max value = 35999   **NOTE, comes in 4 OR 5 digits...
 	uint32_t latitude;
@@ -84,9 +84,8 @@ typedef struct {
 }_GPS_package;
 
 typedef struct {
-	uint8_t  angle;
-	uint16_t distance;
-	uint8_t  width;
+	uint8_t start;
+	uint8_t width;
 } LidarObj;
 
 

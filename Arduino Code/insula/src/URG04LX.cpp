@@ -1,13 +1,15 @@
 #include "URG04LX.h"
+#include <float.h>
+#include <math.h>
 
 #define MAX_DIST	4000
 #define MIN_DIST    50
-#define THRESHOLD   25
+#define THRESHOLD   MIN_DIST
 
 
 URG04LX::URG04LX()
        : HardwareSerial(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2)
-{	// use "MS..." for 2-bit encoding, "MD..." for 3-bit
+{// use "MS..." for 2-bit encoding, "MD..." for 3-bit
 	char msg[17] = {'M','S','0','1','2','8',	 //start step (128 = -90 degrees)
 						    '0','6','4','0',	 //end step   (640 = +90 degrees)
 						    '0','2','1',		 //cluster count, scan interval
@@ -17,35 +19,52 @@ URG04LX::URG04LX()
 
 	for(int i = 0; i < 128; i++)
 	{
-		objects[i].angle    = 0;
-		objects[i].distance = 0;
-		objects[i].width    = 0;
+		objects[i].start = 0;
+		objects[i].width = 0;
 	}
 }
 
 
-void URG04LX::supertest (void)
+byte32 URG04LX::supertest (void)
 {
+	laser(1);
+	uint16_t num_msr = 0, num_obj = 0;
+	byte32 	 temp;
+	delay(10);
+
+	num_msr = distAcq();
+
+	laser(0);
+
+	num_obj = ObjectFilter(num_msr);
+	temp	= ForceCalc(num_obj);
+
+	return temp;
+}
+
+
+uint16_t URG04LX::distAcq (void)
+{
+	uint8_t   lines   = 0x00;	// counts <LF>'s
+	uint16_t  bytecnt = 0x00;	// gross bytes
+	uint16_t  meascnt = 0x00;	// parsed bytes
+
 //  turn off regular serial reading
-	Serialflag.flag2   = 0x3;
-	URG_counter        = 0;
+	URG_counter      = 0x0;
+	Serialflag.flag2 = 0x3;
+
 	write(distance_msg);
 
-	uint8_t   lines      = 0x00;		// counts <LF>'s
-	uint16_t  bytecnt    = 0x00;		// gross byte count
-	uint16_t  meascnt    = 0x00;
-
-//	wait for ~(1/2) data
-	while(URG_counter < 256);
+	while(URG_counter < 575);	//	incoming data is always 580 bytes
+/*	Serial0.println("done waiting!");	*/
 
 
-//  header (skip), ALWAYS 42 BYTES
-	for(; lines < 6; bytecnt++)
+//  header (skip), ALWAYS 48 BYTES
+	for(; lines < 7; bytecnt++)
 		if( 0xA == URG_buffer[bytecnt] )	lines++;
 
-
 //  data section
-	for(; bytecnt <= URG_counter; meascnt++, bytecnt+= 2)
+	for(; bytecnt < URG_counter; bytecnt+= 2)
 	{
 		if( (0xA == URG_buffer[bytecnt]) || (0xA == URG_buffer[bytecnt + 1]) )
 			lines++;	//skip <LF> & 'sum' characters
@@ -57,223 +76,125 @@ void URG04LX::supertest (void)
 
 //			filter out bad useless (super small/large) data points
 			if( (LidarData[meascnt] <= MIN_DIST) || (MAX_DIST < LidarData[meascnt]) )
-				LidarData[meascnt] = MAX_DIST;
+				LidarData[meascnt] = 0;
 
-//			Serial0.print(meascnt);
-//			Serial0.print(" : ");
-//			Serial0.println(LidarData[meascnt], DEC);
+			meascnt++;
 		}
-	}//for loop
+	}///for loop
 
-	Serialflag.flag2 = 0x0;		//turn ring-buffer back on
-
-/*	Serial0.print("HEADER BYTE COUNT = ");
-	Serial0.println(bob, DEC);
-	Serial0.print("TOTAL BYTE COUNT = ");
+/*	Serial0.print("Received total = ");
+	Serial0.println(URG_counter, DEC);
+	Serial0.print("Total parsed   = ");
 	Serial0.println(bytecnt, DEC);
-	Serial0.print("MEASURMENT COUNT = ");
+	Serial0.print("Measurment tot = ");
 	Serial0.println(meascnt, DEC);
-	Serial0.print("LINE COUNT = ");
-	Serial0.println(lines, DEC);	*/
+	Serial0.print("# of lines     = ");
+	Serial0.println(lines, DEC);			*/
 
-	//ObjectFilter(meascnt);
-	ForceCalc(meascnt);
+	Serialflag.flag2 = 0x0;	//turn ring-buffer back on
+
+	return meascnt;
 }
 
 
-void URG04LX::ObjectFilter(uint16_t cnt)
-{
+uint8_t URG04LX::ObjectFilter(uint16_t cnt)
+{/*	Serial0.println("Entering Object filtering...");	*/
+
 	uint8_t obj = 0; // object index
+	int 	back_diff;
 
-	uint16_t back_diff, center_diff, forward_diff;	//differences
-
-/*
- * Track the PREVIOUS DISTANCE to compare with the CURRENT DISTANCE, if its ABOUT the same
- * then add to another characteristic, "width", and track the "middle" angular reading
- * (that way, we send the angular position of object, distance to object, width of object)
- * and if the measuring is CLOSER, use that as the real distance (closest measurement)
- */
-	for(uint8_t i = 1; i < (cnt - 1); i++)	//first and last measurements get special treatment
+	for(uint16_t i = 1; i < (cnt - 1); i++)	//first and last measurements get special treatment
 	{
-		back_diff    = abs(LidarData[i-1] - LidarData[i]  );
-		center_diff  = abs(LidarData[i-1] - LidarData[i+1]);
-		forward_diff = abs(LidarData[i+1] - LidarData[i]  );
+		back_diff = LidarData[ i ] - LidarData[i-1];
 
-		//TODO: simple edge-based system
-		//TODO: filter out threshold values & noise
+//		this data point is a continuation of previous data point
+		if ( abs(back_diff) <= THRESHOLD )
+			objects[obj].width++;
 
-		// if part of current object,
-		// add to its width and update
-		// distance proportionally
+//		if not part of previous data point, make sure this data isn't threshold
+		else if( (0 != LidarData[i]) && (LidarData[i] < 3000) )
+		{
+		//  if previous object is only 1 point wide,
+		//  overwrite. Otherwise, start a new object
+			if(1 != objects[obj].width)		obj++;
 
-		// Object Width; if we can forsee it will
-		// be too big (or it is too big) then create
-		// a new object, even if the 2nd pass filter
-		// has to do modifications
+			objects[obj].start = i;
+			objects[obj].width = 1;
+		}
+	}//1st pass filter
 
-	}
-
-//  2nd PASS FILTER; go through all objects, refine
-	for(uint8_t i = 0; i <= obj; i++)
+/*	for(int i = 0; i < obj; i++)
 	{
+		Serial0.print("Obj start: ");
+		Serial0.print(objects[i].start, DEC);
+		Serial0.print("\t Width: ");
+		Serial0.print(objects[i].width, DEC);
+		Serial0.print("\t distance: ");
+		Serial0.println(LidarData[objects[i].start]);
+	}													*/
 
-	}
 
+	return obj;
 }
 
 
-void URG04LX::ForceCalc(uint16_t num)
+byte32 URG04LX::ForceCalc(uint16_t num)
 {
 //  temp variables
-	float x_distance,  y_distance,
-		  x_force,     y_force;
+	double x_distance, y_distance, raw_distance;
+	double x_force,    y_force;
+
+//	angle measurment; 0[deg] is to our right, and we start one step behind
+	double 	incre  = (4.0*M_PI / 1024.0),  // (2)*[2PI/1024] increment
+			inital = -incre;
 
 //	reset force vectors
-	pos_force_x = 0.0;
-	pos_force_y = 0.0;
+	cumulative_x = 0;
+	cumulative_y = 0;
 
-	neg_force_x = -0.0;
-	neg_force_y = -0.0;
-
-	float angle = -( (M_PI/2.0)+(4.0*M_PI/1024.0) );// -90.703125[deg] initial, (2)*[2PI/1024] increment
-	for(uint16_t i = 0; i < num; i++, angle += (4.0*M_PI / 1024.0))
+//  go through all objects...
+	for(uint8_t i = 0; i <= num; i++)
 	{
-		x_distance = (LidarData[i]) * cos(angle);
-		y_distance = (LidarData[i]) * sin(angle);
+		uint8_t start = objects[i].start;
+		double  angle = inital + incre*(double)start;
 
-		x_force = (LIDAR_FORCE / LidarData[i]) * (x_distance / LidarData[i]);
-		y_force = (LIDAR_FORCE / LidarData[i]) * (y_distance / LidarData[i]);
+/*		Serial0.print("Angle: ");	Serial0.print(angle);
+		Serial0.print(" \t");		Serial0.println(objects[i].width, DEC);		*/
 
-		Serial0.println(y_force);
+//		go through all data points in this object...
+		for(uint8_t j = 0; j <= objects[i].width; j++)
+		{
+			raw_distance = (float) LidarData[start + j];
+			x_distance   = raw_distance * cos(angle + (double)j*incre);
+			y_distance   = raw_distance * sin(angle + (double)j*incre);
 
-		if(0 < x_force)		pos_force_x += x_force;
-		else				neg_force_x -= x_force;
+			x_force = ( (LIDAR_FORCE / raw_distance) * (x_distance / raw_distance) );
+			y_force = ( (LIDAR_FORCE / raw_distance) * (y_distance / raw_distance) );
+		}
 
-		if(0 < y_force) 	pos_force_y += y_force;
-		else				neg_force_y -= y_force;
+		cumulative_x += (signed int)x_force;
+		cumulative_y += (signed int)y_force;
 	}
 
-	Serial0.println();
-	Serial0.print (pos_force_x);
-	Serial0.print ("     ");
-	Serial0.println(pos_force_y);
+/*	Serial0.println();
+	Serial0.print("Fx = ");	Serial0.println(cumulative_x, DEC);
+	Serial0.print("Fy = ");	Serial0.println(cumulative_y, DEC);	*/
 
-	Serial0.println();
-	Serial0.print (neg_force_x);
-	Serial0.print ("     ");
-	Serial0.println(neg_force_y);
+	byte32 cogzilla_info;	cogzilla_info.container = 0;
+//	fill x
+	if 		(cumulative_x < -255)						cogzilla_info.highest = 255;
+	else if	(cumulative_x > -255 && cumulative_x < 0)	cogzilla_info.highest = abs(cumulative_x);
+	else if	(cumulative_x > 0 && cumulative_x < 255)	cogzilla_info.high 	  = cumulative_x;
+	else /* (cum_force_X > 255) */						cogzilla_info.high 	  = 255;
+//	fill y
+	if 		(cumulative_y < -255)						cogzilla_info.low 	 = 255;
+	else if	(cumulative_y > -255 && cumulative_y < 0)	cogzilla_info.low 	 = abs (cumulative_y);
+	else if	(cumulative_y > 0 && cumulative_y < 255)	cogzilla_info.lowest = cumulative_y;
+	else /* (cumulative_y > 255) */						cogzilla_info.lowest = 255;
 
-	cumulative_x = pos_force_x + neg_force_x;
-	cumulative_y = pos_force_y + neg_force_y;
-
-	Serial0.println();
-	Serial0.print("Fx = ");	Serial0.println(cumulative_x);
-	Serial0.print("Fy = ");	Serial0.println(cumulative_y);
-
-/*	cogzilla_info.container = 0;
-	if (cum_force_x < -255)
-		cogzilla_info.highest = 255;
-	else if(cum_force_x > -255 && cum_force_x < 0)
-		cogzilla_info.highest = abs(cum_force_x);
-	else if(cum_force_x > 0 && cum_force_x < 255)
-		cogzilla_info.high = cum_force_x;
-	else //cum_force_X > 255
-		cogzilla_info.high = 255;
-
-	if (cum_force_y < -255)
-		cogzilla_info.low = 255;
-	else if(cum_force_y > -255 && cum_force_y < 0)
-		cogzilla_info.low = cum_force_y;
-	else if(cum_force_y > 0 && cum_force_y < 255)
-		cogzilla_info.lowest = cum_force_y;
-	else //cum_force_y > 255
-		cogzilla_info.lowest = 255;
-
-	Serial0.print ((int)cogzilla_info.highest);
-	Serial0.print ("     ");
-	Serial0.println ((int)cogzilla_info.high);
-	Serial0.print ((int)cogzilla_info.low);
-	Serial0.print ("     ");
-	Serial0.println ((int)cogzilla_info.lowest);
-	Serial0.println();
-	Serial0.println();*/
-
-	/*
-	Brain.write(FORCE_HEADER_X);
-	Brain.write(cogzilla_info.highest);
-	Brain.write(cogzilla_info.high);
-	Brain.write(FORCE_HEADER_Y);
-	Brain.write(cogzilla_info.low);
-	Brain.write(cogzilla_info.lowest);
-	*/
+	return cogzilla_info;
 }
 
-
-void URG04LX::distAcq (void)
-{
-	uint8_t   lines      = 0x00;		// counts <LF>'s
-	uint8_t   whichbyte  = 0x00;		// high or low byte?	TODO: GET RID OF THIS, integrate into ANOTHER...
-	uint16_t  bytecnt    = 0x00;		// gross byte count
-	uint16_t  temp       = 0x00;		// stores the 'deciphered' value
-	float     angle      = 1; //-90.703125;	// which angle does the value correspond to?
-
-
-//  turn off regular serial reading
-	URG_counter        = 0;
-	Serialflag.flag2  = 0x3;
-	write(distance_msg);
-
-//	wait for ~(1/2) data
-	while(URG_counter < 256);
-
-
-//  header (skip), ALWAYS 42 BYTES
-	for(; lines < 6; bytecnt++)
-		if( 0xA == URG_buffer[bytecnt] )	lines++;
-
-	uint8_t bob = bytecnt;
-
-//  data section
-	for(bytecnt = 42; bytecnt <= URG_counter; bytecnt++)
-	{
-		if( 0xA == URG_buffer[bytecnt] )	//end of a line? skip it
-		{
-			lines++;
-			whichbyte = 0;
-		}
-
-		else
-		{
-			if(0 == whichbyte)	temp = 0;
-
-			URG_buffer[bytecnt] -=  0x30;
-			temp               <<=  6;
-			temp                +=  URG_buffer[bytecnt];
-
-			whichbyte++;
-
-//          done getting a value!
-			if(2 == whichbyte)
-			{
-				Serial0.print(angle);
-				Serial0.print(" : ");
-				Serial0.println(temp, DEC);
-
-				whichbyte = 0;
-				angle    += 1;	// = 2*[360/1024] (we use cluster size of 2)
-
-			}
-		}
-	}//for loop
-
-	Serialflag.flag2 = 0x0;		//turn ring-buffer back on
-	Serial0.print("HEADER BYTE COUNT = ");
-	Serial0.println(bob, DEC);
-	Serial0.print("TOTAL BYTE COUNT = ");
-	Serial0.println(bytecnt, DEC);
-	Serial0.print("LINE COUNT = ");
-	Serial0.println(lines, DEC);
-}
 
 
 void URG04LX::getInfo(uint8_t mode)
@@ -301,11 +222,7 @@ void URG04LX::laser(uint8_t mode)
 {
 	char msg[4] = {'B','M',0x0A,'\n'};
 
-	if(!mode)
-	{
-		msg[0] = 'Q';
-		msg[1] = 'T';
-	}
+	if (!mode)	{	msg[0] = 'Q';	msg[1] = 'T';	}
 
 	write(msg);
 }

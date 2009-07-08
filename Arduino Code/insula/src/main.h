@@ -11,15 +11,15 @@
 
 
 /*****MAIN FUNCTIONS*****/
-void check_msg();
-void RC_mode(){}
-void CLI(char *, uint8_t);
-void Sonar_calc();
-void GPS_print();
+void CLI		(char *, uint8_t);
+void check_msg	();
+void RC_mode	() {}
+void Lidar_Send ();
+void Sonar_calc	();
+void GPS_print	();
 
-
-void setup();
-int  main();
+void setup		();
+int  main		();
 
 
 #endif /* MAIN_H_ */
