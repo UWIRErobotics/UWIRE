@@ -25,30 +25,21 @@ URG04LX::URG04LX()
 }
 
 
-byte32 URG04LX::supertest (void)
+void URG04LX::supertest (void)
 {
 	laser(1);	//enable ranging
 
 	uint16_t num_msr = 0;
-//	uint8_t  num_obj = 0;
 
 	num_msr = distAcq();
 
-/*	num_obj = ObjectFilter(num_msr);
-
-	for(uint8_t i = 0; i <= num_obj; i++)
-	{
-		Serial0.print("Obj start: ");
-		Serial0.print(objects[i].start, DEC);
-		Serial0.print("\t Width: ");
-		Serial0.print(objects[i].width, DEC);
-		Serial0.print("\t distance: ");
-		Serial0.println(LidarData[objects[i].start]);
-	}	*/
-
 	laser(0);	//disable ranging
 
-	return BruteCalc(num_msr);
+	BruteCalc(num_msr);
+
+	send_force();
+
+	flush();
 }
 
 
@@ -110,95 +101,7 @@ uint16_t URG04LX::distAcq (void)
 }
 
 
-uint8_t URG04LX::ObjectFilter(uint16_t cnt)
-{/*	Serial0.println("Entering Object filtering...");	*/
-
-	uint8_t obj = 0; // object index
-	int 	back_diff;
-
-	for(uint16_t i = 1; i <= cnt; i++)	//first and last measurements get special treatment
-	{
-		back_diff = LidarData[ i ] - LidarData[i-1];
-
-//		this data point is a continuation of previous data point
-		if ( abs(back_diff) <= THRESHOLD )
-			objects[obj].width++;
-
-//		if not part of previous data point, make sure this data isn't threshold
-		else if( (0 != LidarData[i]) && (LidarData[i] < 3000) )
-		{
-		//  if previous object is only 1 point wide,
-		//  overwrite. Otherwise, start a new object
-			if(1 != objects[obj].width)		obj++;
-
-			objects[obj].start = i;
-			objects[obj].width = 1;
-		}
-	}//1st pass filter
-
-	return obj;
-}
-
-
-byte32 URG04LX::ForceCalc(uint16_t num)
-{
-//  temp variables
-	double x_distance, y_distance, raw_distance;
-	double x_force,    y_force;
-
-//	angle measurment; 0[deg] is to our right, and we start one step behind that
-	double 	incre  = (4.0*M_PI / 1024.0),  // (2)*[2PI/1024] increment
-			inital = -incre;
-
-//	reset force vectors
-	cumulative_x = 0;
-	cumulative_y = 0;
-
-//  go through all objects...
-	for(uint8_t i = 0; i <= num; i++)
-	{
-		uint8_t start = objects[i].start;
-		double  angle = inital + incre*(double)start;
-
-/*		Serial0.print("Angle: ");	Serial0.print(angle);
-		Serial0.print(" \t");		Serial0.println(objects[i].width, DEC);		*/
-
-//		go through all data points in this object...
-		for(uint8_t j = 0; j <= objects[i].width; j++)
-		{
-			raw_distance = (float) LidarData[start + j];
-			x_distance   = raw_distance * cos(angle + (double)j*incre);
-			y_distance   = raw_distance * sin(angle + (double)j*incre);
-
-			x_force = ( (LIDAR_FORCE / raw_distance) * (x_distance / raw_distance) );
-			y_force = ( (LIDAR_FORCE / raw_distance) * (y_distance / raw_distance) );
-		}
-
-		cumulative_x += (signed int)x_force;
-		cumulative_y += (signed int)y_force;
-	}
-
-/*	Serial0.println();
-	Serial0.print("Fx = ");	Serial0.println(cumulative_x, DEC);
-	Serial0.print("Fy = ");	Serial0.println(cumulative_y, DEC);	*/
-
-	byte32 cogzilla_info;	cogzilla_info.container = 0;
-//	fill x
-	if 		(cumulative_x < -255)						cogzilla_info.highest = 255;
-	else if	(cumulative_x > -255 && cumulative_x < 0)	cogzilla_info.highest = abs(cumulative_x);
-	else if	(cumulative_x > 0 && cumulative_x < 255)	cogzilla_info.high 	  = cumulative_x;
-	else /* (cum_force_X > 255) */						cogzilla_info.high 	  = 255;
-//	fill y
-	if 		(cumulative_y < -255)						cogzilla_info.low 	 = 255;
-	else if	(cumulative_y > -255 && cumulative_y < 0)	cogzilla_info.low 	 = abs (cumulative_y);
-	else if	(cumulative_y > 0 && cumulative_y < 255)	cogzilla_info.lowest = cumulative_y;
-	else /* (cumulative_y > 255) */						cogzilla_info.lowest = 255;
-
-	return cogzilla_info;
-}
-
-
-byte32 URG04LX::BruteCalc(uint16_t num)
+void URG04LX::BruteCalc(uint16_t num)
 {
 
 //  temp variables
@@ -233,28 +136,39 @@ byte32 URG04LX::BruteCalc(uint16_t num)
 /*	Serial0.println();
 	Serial0.print("Fx = ");	Serial0.println(cumulative_x, DEC);
 	Serial0.print("Fy = ");	Serial0.println(cumulative_y, DEC);	*/
-
-	byte32 cogzilla_info;	cogzilla_info.container = 0;
-//	fill x
-	if 		(cumulative_x < -255)						cogzilla_info.highest = 255;
-	else if	(cumulative_x > -255 && cumulative_x < 0)	cogzilla_info.highest = abs(cumulative_x);
-	else if	(cumulative_x > 0 && cumulative_x < 255)	cogzilla_info.high 	  = cumulative_x;
-	else /* (cum_force_X > 255) */						cogzilla_info.high 	  = 255;
-//	fill y
-	if 		(cumulative_y < -255)						cogzilla_info.low 	 = 255;
-	else if	(cumulative_y > -255 && cumulative_y < 0)	cogzilla_info.low 	 = abs (cumulative_y);
-	else if	(cumulative_y > 0 && cumulative_y < 255)	cogzilla_info.lowest = cumulative_y;
-	else /* (cumulative_y > 255) */						cogzilla_info.lowest = 255;
-
-	return cogzilla_info;
 }
 
 
+void URG04LX::send_force (void)
+{
+	byte16 cogzilla_info;	cogzilla_info.container = 0;
+
+//	fill x
+	if 	 (255 < abs(cumulative_x))		cogzilla_info.high = 255;
+	else								cogzilla_info.high = abs(cumulative_x);
+//	fill y
+	if 	 (255 < abs(cumulative_y))		cogzilla_info.low  = 255;
+	else								cogzilla_info.low  = abs(cumulative_y);
+
+//  send x
+	if(cumulative_x < 0)
+		Brain.write(FORCE_X_NEG);
+	else
+		Brain.write(FORCE_X_POS);
+
+	Brain.write(cogzilla_info.high);
+
+//	send y
+	if(cumulative_y < 0)
+		Brain.write(FORCE_Y_NEG);
+	else
+		Brain.write(FORCE_Y_POS);
+
+	Brain.write(cogzilla_info.low);
+}
 
 
-
-
-void URG04LX::getInfo(uint8_t mode)
+void URG04LX::getInfo (uint8_t mode)
 {
 	char msg[4] = {'V','V',0x0A,'\n'};
 

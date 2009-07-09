@@ -20,13 +20,14 @@ public:
    void     timeInfo (void);	  // 'TM' command, but we only support GETTING time, for now
    void     reset    (void);	  // 'RS' command
 
-   byte32    supertest(void);
+   void     supertest(void);
 
 
 private:
 	uint8_t ObjectFilter(uint16_t);
 	byte32  ForceCalc   (uint16_t);
-	byte32 	BruteCalc	(uint16_t);
+	void 	BruteCalc	(uint16_t);
+	void	send_force	(void);
 
 	char       distance_msg [17];	//outgoing message
 	uint16_t   LidarData    [512];

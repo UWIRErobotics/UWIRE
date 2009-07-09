@@ -1,5 +1,6 @@
 #include "main.h"
 
+bit8 functionflags;
 
 int main(void)
 {
@@ -10,9 +11,12 @@ int main(void)
 	{
 		check_msg();
 
-		Lidar_Send();
+		if(functionflags.a)
+			Lidar.supertest();
 
-//		Sonar_calc();
+		if(functionflags.b)
+			Sonar_calc();
+
 	} while(1);
 
 	return 0;
@@ -21,6 +25,8 @@ int main(void)
 
 void setup()
 {
+	functionflags.container = 0x00;
+
 //  start user console
 	Serial0.begin(19200);
 	Serial0.println ("Insular Cortex Console");
@@ -34,7 +40,11 @@ void setup()
 	GPS.begin    (GPS_BAUD);	  // Serial3
 	Serial0.print ("GPS   Baud = ");  Serial0.println(GPS_BAUD,   DEC);
 
-	Serial0.println(); delay(400);
+	pinMode(47,INPUT); 			vw_set_rx_pin(47);	// RF
+    vw_setup	 (RF_BAUD);    	vw_rx_start  (  );
+	Serial0.print ("RF    Baud = ");  Serial0.println(RF_BAUD,    DEC);
+
+	Serial0.println(); delay(500);
 }
 
 
@@ -59,17 +69,13 @@ void check_msg(void)
 	if(vw_get_message(buff_rf, &len_rf))
 		CLI((char *) buff_rf, len_rf);
 
+
 	if(Lidar.available() > 0)
 	{
 		while(Lidar.available() > 0)
 			Serial0.write( Lidar.read() );
 	}
 
-/*	if(GPS.available() > 0)
-	{
-		while(GPS.available() > 0)
-			Serial0.write( GPS.read() );
-	}										*/
 }
 
 
@@ -91,7 +97,6 @@ void CLI(char *msg, uint8_t length)
 
 	if ('~' == *msg)
 	{
-		Serial0.println("Entering RC mode");
 		RC_mode();
 		Serial0.println("Leaving RC mode");
 	}
@@ -103,9 +108,24 @@ void CLI(char *msg, uint8_t length)
 	else if('d' == *msg)	Lidar.laser  ( 0 );
 	else if('e' == *msg)	Lidar.laser  ( 1 );
 	else if('f' == *msg)	Lidar.timeInfo();
+	else if('g' == *msg)	Lidar.supertest();
 	else if('r' == *msg)	Lidar.reset();
 
-	else if('g' == *msg)	Lidar.supertest();
+	else if('h' == *msg)
+	{
+		(functionflags.a) ^= 1;	// toggle LIDAR detection
+
+		if(functionflags.a)		Serial0.println("LIDAR on");
+		else					Serial0.println("LIDAR off");
+	}
+
+	else if('i' == *msg)
+	{
+		(functionflags.b) ^= 1;	// toggle SONAR detection
+
+		if(functionflags.b)		Serial0.println("SONAR on");
+		else					Serial0.println("SONAR off");
+	}
 
 /*******************GPS configuration *************************/
 	else if('1' == *msg)	GPS.stop_feed(GPS.GGA);
@@ -128,7 +148,6 @@ void CLI(char *msg, uint8_t length)
 	else if('J' == *msg)	GPS.set_param(9600,  8, true, 0);
 	else if('K' == *msg)	GPS.set_param(19200, 8, true, 0);
 	else if('L' == *msg)	GPS.set_param(38400, 8, true, 0);
-
 
 
 /************************* I2C Sonar *************************/
@@ -199,38 +218,9 @@ void CLI(char *msg, uint8_t length)
 		Brain.write( val.low );
 		Brain.write( val.high);
 	}
-//	else if('G' == *msg)	GPS_print();
-//	else if('H' == *msg)	Sonar_calc();
-
 
 	Serial0.println();
 	Serial0.flush();
-}
-
-
-void Lidar_Send()
-{
-	byte32 cogzilla_info = Lidar.supertest();
-
-	Brain.write(FORCE_HEADER_X);
-	Brain.write(cogzilla_info.highest);
-	Brain.write(cogzilla_info.high);
-	Brain.write(FORCE_HEADER_Y);
-	Brain.write(cogzilla_info.low);
-	Brain.write(cogzilla_info.lowest);
-
-	Lidar.flush();	//get rid of annoying 'QT' confirmation message
-
-	Serial0.print ((int)cogzilla_info.highest);
-	Serial0.print ("     ");
-	Serial0.println ((int)cogzilla_info.high);
-	Serial0.print ((int)cogzilla_info.low);
-	Serial0.print ("     ");
-	Serial0.println ((int)cogzilla_info.lowest);
-	Serial0.println();
-	Serial0.println();
-
-	delay(25);
 }
 
 
@@ -248,66 +238,98 @@ void Sonar_calc()
 	double cum_force_x = 0;
 	double cum_force_y = 0;
 
-	while(Serial0.read() != 'e')
+	cum_force_x = 0;
+	cum_force_y = 0;
+	for(int i=0;i<NUM_READINGS;i++)
 	{
-		cum_force_x = 0;
-		cum_force_y = 0;
-		for(int i=0;i<NUM_READINGS;i++)
-		{
-			obs_distance[i] = Sonar.range(Sonar1 + i); //for now this is just 0x71 and 0x72...add lidar update here.
+		obs_distance[i] = Sonar.range(Sonar1 + i); //for now this is just 0x71 and 0x72...add lidar update here.
 
-			x_distance[i] = obs_distance[i] * (cos(obs_angle[i]));
-			y_distance[i] = obs_distance[i] * (sin(obs_angle[i]));
+		x_distance[i] = obs_distance[i] * (cos(obs_angle[i]));
+		y_distance[i] = obs_distance[i] * (sin(obs_angle[i]));
 
-			x_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (x_distance[i]/obs_distance[i]);
-			y_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (y_distance[i]/obs_distance[i]);
+		x_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (x_distance[i]/obs_distance[i]);
+		y_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (y_distance[i]/obs_distance[i]);
 
-			cum_force_x  += x_force[i];
-			cum_force_y  += y_force[i];
-		}
-		Serial0.print  ("Fx = ");
-		Serial0.print  (cum_force_x);
-		Serial0.print  (",  Fy = ");
-		Serial0.println(cum_force_y);
+		cum_force_x  += x_force[i];
+		cum_force_y  += y_force[i];
+	}
 
-		byte32 cogzilla_info;	cogzilla_info.container = 0;
-		/* Highest  = negative x
-		 * High 	= positive x
-		 * Low		= negative y
-		 * Lowest	= positive y*/
+	Serial0.print  ("Fx = ");
+	Serial0.print  (cum_force_x);
+	Serial0.print  (",  Fy = ");
+	Serial0.println(cum_force_y);
 
-		if 		(cum_force_x < -255)						cogzilla_info.highest = 255;
-		else if	(cum_force_x > -255 && cum_force_x < 0)		cogzilla_info.highest = abs(cum_force_x);
-		else if	(cum_force_x > 0 && cum_force_x < 255)		cogzilla_info.high    = cum_force_x;
-		else /*	(cum_force_X > 255 ) */						cogzilla_info.high    = 255;
+	byte16 cogzilla_info;	cogzilla_info.container = 0;
+//	fill x
+	if 	 (255 < abs(cum_force_x))		cogzilla_info.high = 255;
+	else								cogzilla_info.high = abs(cum_force_x);
+//	fill y
+	if 	 (255 < abs(cum_force_y))		cogzilla_info.low  = 255;
+	else								cogzilla_info.low  = abs(cum_force_y);
 
-		if 		(cum_force_y < -255)						cogzilla_info.low 	 = 255;
-		else if	(cum_force_y > -255 && cum_force_y < 0)		cogzilla_info.low 	 = cum_force_y;
-		else if	(cum_force_y > 0 && cum_force_y < 255)		cogzilla_info.lowest = cum_force_y;
-		else /* (cum_force_y > 255) */						cogzilla_info.lowest = 255;
+//  send x
+	if(cum_force_x < 0)
+		Brain.write(FORCE_X_NEG);
+	else
+		Brain.write(FORCE_X_POS);
 
-		Brain.write(FORCE_HEADER_X);
-		Brain.write(cogzilla_info.highest);
-		Brain.write(cogzilla_info.high);
+	Brain.write(cogzilla_info.high);
 
-		Brain.write(FORCE_HEADER_Y);
-		Brain.write(cogzilla_info.low);
-		Brain.write(cogzilla_info.lowest);
+//	send y
+	if(cum_force_y < 0)
+		Brain.write(FORCE_Y_NEG);
+	else
+		Brain.write(FORCE_Y_POS);
+
+	Brain.write(cogzilla_info.low);
 
 //		DEBUG ONLY
-		Serial0.print 	((int)cogzilla_info.highest);
-		Serial0.print 	("     ");
-		Serial0.println ((int)cogzilla_info.high);
-		Serial0.print 	((int)cogzilla_info.low);
-		Serial0.print 	("     ");
-		Serial0.println	((int)cogzilla_info.lowest);
-		Serial0.println	();
-		Serial0.println	();
-	}
+	Serial0.println ((int)cogzilla_info.high);
+	Serial0.println	((int)cogzilla_info.low);
+	Serial0.println	();
+	Serial0.println	();
 }
 
 
 void RC_mode (void)
 {
+	unsigned char c;
 
+	Brain.write(RemoteControl);
+
+	while(Brain.available() > 0) {};
+	c = Brain.read();
+
+	if(RemoteControl == c)
+	{
+		Serial0.println("Entering RC mode");
+
+		uint8_t  buff      [VW_MAX_MESSAGE_LEN];
+		uint8_t  len   =    VW_MAX_MESSAGE_LEN;
+		c = 0x00;
+
+		while('~' != c)
+		{//	RF has higher priority than Serial
+			if( vw_get_message(buff, &len) )
+			{
+				c = buff[1];
+				Brain.write(c);
+			}
+
+			else if(Serial0.available() > 0)
+			{
+				c = Serial0.read();
+				Brain.write(c);
+			}
+		}
+
+		Brain.write('~');
+
+		while(Brain.available() > 0) {};
+		c = Brain.read();
+
+		if(c != '~')	Serial0.println("Catastrophic RC error!");
+	}
+
+	else		Serial0.println("RC mode failed!");
 }

@@ -61,7 +61,7 @@ using   Print::  write; // pull in write(str) and write(buff, size) from Print
 
 /*****************************/
 extern HardwareSerial Serial0;
-//extern HardwareSerial Serial1;
+extern HardwareSerial Brain;
 //extern HardwareSerial Serial2;
 //extern HardwareSerial Serial3;
 /*****************************/

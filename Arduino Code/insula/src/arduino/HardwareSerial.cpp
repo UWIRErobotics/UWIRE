@@ -17,6 +17,7 @@ volatile unsigned char 	GPS_buffer[128] = {0x00};
 volatile uint16_t 		GPS_counter 	=  0x00;
 volatile uint8_t 		comma 			=  0x00;
 		_GPS_package 	GPS_package     = {0,0,0,0,0};
+		 bit8 			GPS_flags;
 
 // LIDAR buffers
 volatile unsigned char 	URG_buffer[600] = {0x00};
@@ -93,13 +94,6 @@ void HardwareSerial::write(uint8_t c) {
 	*_udr = c;
 }
 
-//	(&rx_buffer1, &UBRR1H, &UBRR1L, &, &UCSR1B, &, RXEN1, TXEN1, RXCIE1, )
-void BrainWrite(uint8_t c) {
-
-	while (! (UCSR1A & (1 << UDRE1)) ); //wait for outgoing buffer to be empty
-
-	UDR1 = c;
-}
 
 /*********************************************************************************************/
 inline void store_char(unsigned char c, ring_buffer *rx_buffer) {
@@ -114,7 +108,7 @@ inline void store_char(unsigned char c, ring_buffer *rx_buffer) {
 
 /****** Preinstantiate Objects ******/
   HardwareSerial Serial0(&rx_buffer0, &UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UDR0, RXEN0, TXEN0, RXCIE0, UDRE0);
-//HardwareSerial Serial1(&rx_buffer1, &UBRR1H, &UBRR1L, &UCSR1A, &UCSR1B, &UDR1, RXEN1, TXEN1, RXCIE1, UDRE1);
+  HardwareSerial Brain  (&rx_buffer1, &UBRR1H, &UBRR1L, &UCSR1A, &UCSR1B, &UDR1, RXEN1, TXEN1, RXCIE1, UDRE1);
 //HardwareSerial Serial2(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2);
 //HardwareSerial Serial3(&rx_buffer3, &UBRR3H, &UBRR3L, &UCSR3A, &UCSR3B, &UDR3, RXEN3, TXEN3, RXCIE3, UDRE3);
 
@@ -159,15 +153,16 @@ SIGNAL(SIG_USART3_RECV)
 //	start of new packet
 	if ('$' == c)
 	{
-		comma       	 = 0x0;
-		GPS_counter 	 = 0x0;
-		Serialflag.flag3 = 0x0;
+		comma       	 	  = 0x0;
+		GPS_counter 	 	  = 0x0;
+		GPS_flags.container	  = 0x0;
+		Serialflag.flag3 	  = 0x0;
 
-		GPS_package.time      = 0x00;
-		GPS_package.speed     = 0x00;
-		GPS_package.course    = 0x00;
-		GPS_package.latitude  = 0x00;
-		GPS_package.longitude = 0x00;
+		GPS_package.time      = 0x0;
+		GPS_package.speed     = 0x0;
+		GPS_package.course    = 0x0;
+		GPS_package.latitude  = 0x0;
+		GPS_package.longitude = 0x0;
 	}
 
 	GPS_buffer[GPS_counter] = c;
@@ -178,8 +173,38 @@ SIGNAL(SIG_USART3_RECV)
 	{
 		Serialflag.flag3 = 0x3;
 
-/*		for(uint8_t i = 0; i <= GPS_counter; i++)	//DEBUG ONLY
-			Serial0.print(GPS_buffer[i]);			*/
+		if(!(GPS_flags.a))
+		{
+			byte16 temp16;
+			byte32 temp32;
+
+			temp16.container = GPS_package.speed;
+			Brain.write(GPS_speed);
+			Brain.write(temp16.high);
+			Brain.write(temp16.low);
+
+			temp16.container = GPS_package.course;
+			Brain.write(GPS_course);
+			Brain.write(temp16.high);
+			Brain.write(temp16.low);
+
+			temp32.container = GPS_package.latitude;
+			Brain.write(GPS_latitude);
+			Brain.write(temp32.highest);
+			Brain.write(temp32.high);
+			Brain.write(temp32.low);
+			Brain.write(temp32.lowest);
+
+			temp32.container = GPS_package.longitude;
+			Brain.write(GPS_longitude);
+			Brain.write(temp32.highest);
+			Brain.write(temp32.high);
+			Brain.write(temp32.low);
+			Brain.write(temp32.lowest);
+		}
+
+		for(uint8_t i = 0; i <= GPS_counter; i++)	//DEBUG ONLY
+			Serial0.print(GPS_buffer[i]);
 	}
 
 	else if ('.' != c)	//ignore decimals
@@ -206,6 +231,7 @@ SIGNAL(SIG_USART3_RECV)
 			case 2://status
 			{
 				if('A' != c)
+					GPS_flags.a = 0x1;						//set 'bad status' flag
 /*					Serial0.println("Status invalid!");		//DEBUG ONLY */
 
 				break;
@@ -263,7 +289,6 @@ SIGNAL(SIG_USART3_RECV)
 			}
 		}//switch...case
 	}//separator != buffer_in[index]
-
 
 	GPS_counter++;
 }
