@@ -17,8 +17,6 @@ public:
    ~_GPS(void){}
 
 
-
-// sending (and related) commands
 	     void  parse        (void);
 unsigned long  get          (data_types);
          void  set_param    (long, byte, boolean, byte);
@@ -42,6 +40,7 @@ private:
 
 	char          buffer_out[25], *pbuffer_out;
 };
+
 
 /** OBJECT 'DECLARATION' **/
       extern _GPS GPS;

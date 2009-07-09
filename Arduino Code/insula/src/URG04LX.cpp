@@ -3,8 +3,8 @@
 #include <math.h>
 
 #define MAX_DIST	4000
-#define MIN_DIST    50
-#define THRESHOLD   MIN_DIST
+#define MIN_DIST    100
+#define THRESHOLD   50
 
 
 URG04LX::URG04LX()
@@ -27,19 +27,28 @@ URG04LX::URG04LX()
 
 byte32 URG04LX::supertest (void)
 {
-	laser(1);
-	uint16_t num_msr = 0, num_obj = 0;
-	byte32 	 temp;
-	delay(10);
+	laser(1);	//enable ranging
+
+	uint16_t num_msr = 0;
+//	uint8_t  num_obj = 0;
 
 	num_msr = distAcq();
 
-	laser(0);
+/*	num_obj = ObjectFilter(num_msr);
 
-	num_obj = ObjectFilter(num_msr);
-	temp	= ForceCalc(num_obj);
+	for(uint8_t i = 0; i <= num_obj; i++)
+	{
+		Serial0.print("Obj start: ");
+		Serial0.print(objects[i].start, DEC);
+		Serial0.print("\t Width: ");
+		Serial0.print(objects[i].width, DEC);
+		Serial0.print("\t distance: ");
+		Serial0.println(LidarData[objects[i].start]);
+	}	*/
 
-	return temp;
+	laser(0);	//disable ranging
+
+	return BruteCalc(num_msr);
 }
 
 
@@ -64,7 +73,8 @@ uint16_t URG04LX::distAcq (void)
 		if( 0xA == URG_buffer[bytecnt] )	lines++;
 
 //  data section
-	for(; bytecnt < URG_counter; bytecnt+= 2)
+	//for(; bytecnt < URG_counter; bytecnt+= 2)	//URG_counter should be 588!
+	for(; lines < 19; bytecnt+= 2)				//should always receive 19 lines
 	{
 		if( (0xA == URG_buffer[bytecnt]) || (0xA == URG_buffer[bytecnt + 1]) )
 			lines++;	//skip <LF> & 'sum' characters
@@ -82,14 +92,17 @@ uint16_t URG04LX::distAcq (void)
 		}
 	}///for loop
 
-/*	Serial0.print("Received total = ");
-	Serial0.println(URG_counter, DEC);
-	Serial0.print("Total parsed   = ");
-	Serial0.println(bytecnt, DEC);
-	Serial0.print("Measurment tot = ");
-	Serial0.println(meascnt, DEC);
-	Serial0.print("# of lines     = ");
-	Serial0.println(lines, DEC);			*/
+	if(bytecnt < 588)
+	{
+		Serial0.print("Received total = ");
+		Serial0.println(URG_counter, DEC);
+		Serial0.print("Total parsed   = ");
+		Serial0.println(bytecnt, DEC);
+		Serial0.print("Measurment tot = ");
+		Serial0.println(meascnt, DEC);
+		Serial0.print("# of lines     = ");
+		Serial0.println(lines, DEC);
+	}
 
 	Serialflag.flag2 = 0x0;	//turn ring-buffer back on
 
@@ -103,7 +116,7 @@ uint8_t URG04LX::ObjectFilter(uint16_t cnt)
 	uint8_t obj = 0; // object index
 	int 	back_diff;
 
-	for(uint16_t i = 1; i < (cnt - 1); i++)	//first and last measurements get special treatment
+	for(uint16_t i = 1; i <= cnt; i++)	//first and last measurements get special treatment
 	{
 		back_diff = LidarData[ i ] - LidarData[i-1];
 
@@ -122,17 +135,6 @@ uint8_t URG04LX::ObjectFilter(uint16_t cnt)
 			objects[obj].width = 1;
 		}
 	}//1st pass filter
-
-/*	for(int i = 0; i < obj; i++)
-	{
-		Serial0.print("Obj start: ");
-		Serial0.print(objects[i].start, DEC);
-		Serial0.print("\t Width: ");
-		Serial0.print(objects[i].width, DEC);
-		Serial0.print("\t distance: ");
-		Serial0.println(LidarData[objects[i].start]);
-	}													*/
-
 
 	return obj;
 }
@@ -194,6 +196,61 @@ byte32 URG04LX::ForceCalc(uint16_t num)
 
 	return cogzilla_info;
 }
+
+
+byte32 URG04LX::BruteCalc(uint16_t num)
+{
+
+//  temp variables
+	double x_distance, y_distance, raw_distance;
+	double x_force,    y_force;
+
+//	angle measurement; 0[deg] is to our right, and we start one step behind that
+	double 	incre  = (4.0*M_PI / 1024.0),  // (2)*[2PI/1024] increment
+			angle = -incre;
+
+//	reset force vectors
+	cumulative_x = 0;
+	cumulative_y = 0;
+
+//  go through all objects...
+	for(uint16_t i = 0; i <= num; i++, angle += incre)
+	{
+		if(LidarData[i] != 0)
+		{
+			raw_distance = (float) LidarData[i];
+			x_distance   = raw_distance * cos(angle);
+			y_distance   = raw_distance * sin(angle);
+
+			x_force = ( (BRUTE_FORCE / raw_distance) * (x_distance / raw_distance) );
+			y_force = ( (BRUTE_FORCE / raw_distance) * (y_distance / raw_distance) );
+
+			cumulative_x += (signed int)x_force;
+			cumulative_y += (signed int)y_force;
+		}
+	}
+
+/*	Serial0.println();
+	Serial0.print("Fx = ");	Serial0.println(cumulative_x, DEC);
+	Serial0.print("Fy = ");	Serial0.println(cumulative_y, DEC);	*/
+
+	byte32 cogzilla_info;	cogzilla_info.container = 0;
+//	fill x
+	if 		(cumulative_x < -255)						cogzilla_info.highest = 255;
+	else if	(cumulative_x > -255 && cumulative_x < 0)	cogzilla_info.highest = abs(cumulative_x);
+	else if	(cumulative_x > 0 && cumulative_x < 255)	cogzilla_info.high 	  = cumulative_x;
+	else /* (cum_force_X > 255) */						cogzilla_info.high 	  = 255;
+//	fill y
+	if 		(cumulative_y < -255)						cogzilla_info.low 	 = 255;
+	else if	(cumulative_y > -255 && cumulative_y < 0)	cogzilla_info.low 	 = abs (cumulative_y);
+	else if	(cumulative_y > 0 && cumulative_y < 255)	cogzilla_info.lowest = cumulative_y;
+	else /* (cumulative_y > 255) */						cogzilla_info.lowest = 255;
+
+	return cogzilla_info;
+}
+
+
+
 
 
 

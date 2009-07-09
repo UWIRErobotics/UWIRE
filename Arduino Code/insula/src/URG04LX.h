@@ -26,10 +26,11 @@ public:
 private:
 	uint8_t ObjectFilter(uint16_t);
 	byte32  ForceCalc   (uint16_t);
+	byte32 	BruteCalc	(uint16_t);
 
 	char       distance_msg [17];	//outgoing message
 	uint16_t   LidarData    [512];
-	LidarObj   objects  	   [128];
+	LidarObj   objects      [128];
 	signed int cumulative_x, cumulative_y;
 };
 

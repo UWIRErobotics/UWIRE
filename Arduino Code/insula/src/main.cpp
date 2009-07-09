@@ -10,7 +10,7 @@ int main(void)
 	{
 		check_msg();
 
-//		Lidar_Send();
+		Lidar_Send();
 
 //		Sonar_calc();
 	} while(1);
@@ -52,12 +52,12 @@ void check_msg(void)
 		CLI(buff_console, len_console);
 	}
 
-/*  check RF
+//  check RF
 	uint8_t  buff_rf      [VW_MAX_MESSAGE_LEN];
 	uint8_t  len_rf   =    VW_MAX_MESSAGE_LEN;
 
 	if(vw_get_message(buff_rf, &len_rf))
-		CLI((char *) buff_rf, len_rf);	*/
+		CLI((char *) buff_rf, len_rf);
 
 	if(Lidar.available() > 0)
 	{
@@ -65,12 +65,11 @@ void check_msg(void)
 			Serial0.write( Lidar.read() );
 	}
 
-
-	if(GPS.available() > 0)
+/*	if(GPS.available() > 0)
 	{
 		while(GPS.available() > 0)
 			Serial0.write( GPS.read() );
-	}
+	}										*/
 }
 
 
@@ -220,6 +219,8 @@ void Lidar_Send()
 	Brain.write(cogzilla_info.low);
 	Brain.write(cogzilla_info.lowest);
 
+	Lidar.flush();	//get rid of annoying 'QT' confirmation message
+
 	Serial0.print ((int)cogzilla_info.highest);
 	Serial0.print ("     ");
 	Serial0.println ((int)cogzilla_info.high);
@@ -235,7 +236,6 @@ void Lidar_Send()
 
 
 #define NUM_READINGS 2
-
 void Sonar_calc()
 {
 	double obs_distance[NUM_READINGS];
@@ -295,14 +295,19 @@ void Sonar_calc()
 		Brain.write(cogzilla_info.lowest);
 
 //		DEBUG ONLY
-		Serial0.print ((int)cogzilla_info.highest);
-		Serial0.print ("     ");
+		Serial0.print 	((int)cogzilla_info.highest);
+		Serial0.print 	("     ");
 		Serial0.println ((int)cogzilla_info.high);
-		Serial0.print ((int)cogzilla_info.low);
-		Serial0.print ("     ");
-		Serial0.println ((int)cogzilla_info.lowest);
-		Serial0.println();
-		Serial0.println();
+		Serial0.print 	((int)cogzilla_info.low);
+		Serial0.print 	("     ");
+		Serial0.println	((int)cogzilla_info.lowest);
+		Serial0.println	();
+		Serial0.println	();
 	}
 }
 
+
+void RC_mode (void)
+{
+
+}

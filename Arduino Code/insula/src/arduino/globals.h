@@ -5,12 +5,13 @@
 #define RF_BAUD       2400
 #define BRAIN_BAUD    9600
 #define LIDAR_BAUD    250000
-#define GPS_BAUD	  38400
+#define GPS_BAUD	  9600
 
 
 /********** FORCE CONSTANTS **********/
 #define SONAR_FORCE 24000
 #define LIDAR_FORCE 16000
+#define BRUTE_FORCE 10000
 
 
 /********** MESSAGE HEADERS **********/

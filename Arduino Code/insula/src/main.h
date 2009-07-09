@@ -13,7 +13,7 @@
 /*****MAIN FUNCTIONS*****/
 void CLI		(char *, uint8_t);
 void check_msg	();
-void RC_mode	() {}
+void RC_mode	();
 void Lidar_Send ();
 void Sonar_calc	();
 

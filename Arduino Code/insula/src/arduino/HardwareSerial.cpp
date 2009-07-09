@@ -178,8 +178,8 @@ SIGNAL(SIG_USART3_RECV)
 	{
 		Serialflag.flag3 = 0x3;
 
-		for(uint8_t i = 0; i <= GPS_counter; i++)	//DEBUG ONLY
-			Serial0.print(GPS_buffer[i]);
+/*		for(uint8_t i = 0; i <= GPS_counter; i++)	//DEBUG ONLY
+			Serial0.print(GPS_buffer[i]);			*/
 	}
 
 	else if ('.' != c)	//ignore decimals
@@ -206,7 +206,7 @@ SIGNAL(SIG_USART3_RECV)
 			case 2://status
 			{
 				if('A' != c)
-					Serial0.println("Status invalid!");
+/*					Serial0.println("Status invalid!");		//DEBUG ONLY */
 
 				break;
 			}
