@@ -133,8 +133,6 @@ void drag_drive()
 
 void track_drive()
 {
-	MsTimer2::start();
-
 	//ekf matrices;
 
 	float mean_predicted [STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
@@ -166,7 +164,7 @@ void track_drive()
 	float single_temp[STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 	float single_temp1[STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 
-	char user_input;
+	char user_input = 'a';
 
 	while (user_input!='e')
 	{
@@ -254,7 +252,6 @@ void track_drive()
 
 
 	}
-	MsTimer2::stop();
 }
 
 void wgslla2xyz(float wlat, float wlon)
