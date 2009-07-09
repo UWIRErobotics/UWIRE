@@ -32,4 +32,22 @@
 #define Y_MEAS_VAR 0.03
 #define THETA_MEAS_VAR 0.01
 
+
+/**************ZONE CONSTANTS******************/
+#define ZONE_1_X 761929.8125
+#define ZONE_1_Y -4573214
+
+#define ZONE_2_X 761930.3750
+#define ZONE_2_Y -4573194.5
+
+#define ZONE_3_X 761897.25
+#define ZONE_3_Y 4573202.5
+
+#define ZONE_4_X 761953.3125
+#define ZONE_4_Y -4573227
+
+#define ZONE_5_X 761935.25
+#define ZONE_5_Y -4573235
+
+
 #endif /* COG_GLOBALS_H_ */
