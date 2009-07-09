@@ -6,7 +6,8 @@
 #include "globals.h"
 #include "vehicle_control.h"
 #include "cmu_cam.h"
-
+#include "cog_globals.h"
+#include "matrix_math.cpp"
 
 /*****MAIN FUNCTIONS*****/
 void setup();

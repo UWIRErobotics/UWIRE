@@ -11,6 +11,11 @@
 #include "arduino/HardwareSerial.h"
 #include "arduino/WProgram.h"
 #include "globals.h"
+#include "cog_globals.h"
+
+#define CMU_RESULT_MX 0
+#define CMU_RESULT_MY 1
+#define CMU_RESULT_CONF 7
 
 class cmu_cam
 {

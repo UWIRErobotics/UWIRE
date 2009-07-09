@@ -5,6 +5,7 @@
 #include "arduino/MegaServo.h"
 #include "arduino/HardwareSerial.h"
 #include "arduino/WProgram.h"
+#include "cog_globals.h"
 
 class vehicle
 {

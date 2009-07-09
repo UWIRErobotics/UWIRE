@@ -11,13 +11,13 @@
 /**************************/
 HardwareSerial *cam_serial;
 
-void cmu_cam::setup_cmu_cam(HardwareSerial *serial_port )
+void  cmu_cam::setup_cmu_cam(HardwareSerial *serial_port )
 {
+
 	cam_serial = serial_port;
 	cam_serial->begin(9600);
 	cam_serial->flush();
 
-	//Serial0.println("Port Setup");
 	//switch camera to raw serial mode
 	cam_serial->print("RM 1");
 	cam_serial->write(0x0D); //carriage return
