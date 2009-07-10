@@ -1,7 +1,12 @@
 #include "main.h"
 
 /**************** UPDATE FLAGS/VARIABLES ********/
-bool new_gps_data;
+bool new_gps_data = false;
+bool new_force_data = false;
+
+int set_angle=1300;
+int set_speed=0;
+
 float curr_xpos_reading =  761929.06;
 float curr_ypos_reading =  -4573213;
 float curr_velocity_reading;
@@ -9,6 +14,31 @@ float curr_heading_reading = 3.78771354267809;
 float curr_xpos_best_estimate = 0;
 float curr_ypos_best_estimate = 0;
 float curr_zone=0;
+
+int force_x;
+int force_y;
+
+
+
+void wgslla2xyz(float wlat, float wlon)
+{
+  float A_EARTH = 6378137.0;
+  float walt=0.0;
+  float flattening = 1/298.257223563;
+  float NAV_E2 = (2-flattening)*flattening;
+
+  float deg2rad = PI/180;
+
+  float slat = sin(wlat*deg2rad);
+  float clat = cos(wlat*deg2rad);
+  float r_n = sqrt(1 - NAV_E2*slat*slat);
+
+  r_n = A_EARTH/r_n;
+
+  curr_xpos_reading = (r_n + walt)*clat*cos(wlon*deg2rad);
+  curr_ypos_reading = (r_n + walt)*clat*sin(wlon*deg2rad);
+}
+
 
 
 void rc_drive()
@@ -69,6 +99,8 @@ void insula_read()
 			buffer_16.high = Serial3.read();
 			buffer_16.low = Serial3.read();
 			curr_velocity_reading = (float)buffer_16.container;
+			curr_velocity_reading /= 100;
+			curr_velocity_reading *= 0.5144;
 		}
 		else if (insula_read == GPS_course)
 		{
@@ -77,6 +109,7 @@ void insula_read()
 			buffer_16.low = Serial3.read();
 			curr_heading_reading = (float)buffer_16.container;
 			curr_heading_reading /= 100;
+			curr_heading_reading *= (PI/180);
 		}
 		else if (insula_read == GPS_latitude)
 		{
@@ -86,6 +119,9 @@ void insula_read()
 			buffer_32.low = Serial3.read();
 			buffer_32.lowest = Serial3.read();
 			curr_xpos_reading = (float)buffer_32.container;
+			curr_xpos_reading -= 43000000;
+			curr_xpos_reading /= 600000;
+			curr_xpos_reading += 43;
 		}
 		else if(insula_read == GPS_longitude)
 		{
@@ -95,7 +131,35 @@ void insula_read()
 			buffer_32.low = Serial3.read();
 			buffer_32.lowest = Serial3.read();
 			curr_ypos_reading = (float)buffer_32.container;
+			curr_ypos_reading -= 80000000;
+			curr_ypos_reading /= 600000;
+			curr_ypos_reading = -curr_ypos_reading - 80;
+			wgslla2xyz(curr_xpos_reading,curr_ypos_reading);
 			new_gps_data = true;
+		}
+		else if (insula_read==FORCE_X_POS)
+		{
+			while(Serial3.available() < 1){};
+			force_x = Serial3.read();
+		}
+		else if (insula_read==FORCE_X_NEG)
+		{
+			while(Serial3.available() < 1){};
+			force_x =Serial3.read();
+			force_x*=-1;
+		}
+		else if (insula_read==FORCE_Y_POS)
+		{
+			while(Serial3.available() < 1){};
+			force_y = Serial3.read();
+			new_force_data = true;
+		}
+		else if (insula_read==FORCE_Y_NEG)
+		{
+			while(Serial3.available() < 1){};
+			force_y =Serial3.read();
+			force_y *= -1;
+			new_force_data = true;
 		}
 	}
 }
@@ -135,6 +199,8 @@ void track_drive()
 {
 	//ekf matrices;
 
+	bool ignore_gps = false;
+
 	float mean_predicted [STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 	float mean_best [STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 	float last_best [STATE_N][STATE_M] = {{761897.0},{-4573234.0},{0.00}}; //fill in with first set of gps values!
@@ -165,12 +231,39 @@ void track_drive()
 	float single_temp1[STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 
 	char user_input = 'a';
+	int steering_angle = 0;
+
+	Serial0.println("Use GPS?");
+	while(Serial0.available()<=0){};
+	user_input = Serial0.read();
+	if (user_input == 'n' || user_input =='N')
+	{
+		ignore_gps = true;
+		Serial0.println("Ignoring GPS!");
+	}
+	else
+	{
+		ignore_gps = false;
+		while(!new_gps_data)
+		{
+			insula_read();
+		}
+		Serial0.println("Got First GPS Data");
+		//Initialize First Estimate for EKF
+		last_best[0][0] = curr_xpos_reading;
+		last_best[1][0] = curr_ypos_reading;
+		last_best[2][0] = curr_heading_reading;
+		control_u[0][0] = curr_velocity_reading;
+		new_gps_data = false;
+	}
+	neuro_bot.set_speed(15);
 
 	while (user_input!='e')
 	{
 		user_input = Serial0.read();
 		insula_read();
-		if (false) //propagate EKF
+
+		if (new_gps_data && !ignore_gps) //propagate EKF
 		{
 			/**********Propagate Motion Model*********************/
 			mean_predicted[0][0] = last_best[0][0] + control_u[0][0]*cos(last_best[2][0]);
@@ -212,8 +305,6 @@ void track_drive()
 			matrix_multiply((float*)kalman_gain,(float*)single_temp,STATE_N,STATE_N,STATE_M,(float*)single_temp1);
 			matrix_addition((float*)mean_predicted,(float*)single_temp1,STATE_N,STATE_M,(float*)mean_best);
 
-			//matrix_print((float*)mean_best,STATE_N,STATE_M);
-
 			matrix_multiply((float*)kalman_gain,(float*)Ht,STATE_N,STATE_N,STATE_N,(float*)temp);
 			matrix_subtraction((float*)identity_matrix,(float*)temp,STATE_N,STATE_N,(float*)temp1);
 			matrix_multiply((float*)temp1,(float*)variance_predicted,STATE_N,STATE_N,STATE_N,(float*)variance_best);
@@ -231,48 +322,40 @@ void track_drive()
 			update_zones();
 		}
 
-		if(new_gps_data)
+		/*if(new_gps_data)
 		{
-			Serial0.print("Speed:");
-			Serial0.println(curr_velocity_reading);
-
-			Serial0.print("Heading:");
-			Serial0.println(curr_heading_reading);
-
-			Serial0.print("Latitude:");
-			Serial0.println(curr_xpos_reading);
-
-			Serial0.print("Longitude");
+			Serial0.print(curr_velocity_reading);
+			Serial0.print(",");
+			Serial0.print(curr_heading_reading);
+			Serial0.print(",");
+			Serial0.print(curr_xpos_reading);
+			Serial0.print(",");
 			Serial0.println(curr_ypos_reading);
 			new_gps_data = false;
 
-		}
-		/*Serial0.print ("Current Zone:");
-		Serial0.println(curr_zone);*/
+		}*/
 
+		if (new_force_data)
+		{
+			Serial0.println(force_x);
+			if (force_x < 0)
+			{
+				steering_angle = (0.00768900 * sq((float)force_x)) + 1300;
+				neuro_bot.set_turn_angle(steering_angle);
+			}
+			else
+			{
+				steering_angle = (0.00615148 * sq((float)force_x - 255.0)) + 900;
+				neuro_bot.set_turn_angle(steering_angle);
+			}
+
+			new_force_data = false;
+			Serial0.println(steering_angle);
+		}
 
 	}
+	neuro_bot.set_speed(0);
 }
-
-void wgslla2xyz(float wlat, float wlon)
-{
-  float A_EARTH = 6378137.0;
-  float walt=0.0;
-  float flattening = 1/298.257223563;
-  float NAV_E2 = (2-flattening)*flattening;
-
-  float deg2rad = PI/180;
-
-  float slat = sin(wlat*deg2rad);
-  float clat = cos(wlat*deg2rad);
-  float r_n = sqrt(1 - NAV_E2*slat*slat);
-
-  r_n = A_EARTH/r_n;
-
-  curr_xpos_reading = (r_n + walt)*clat*cos(wlon*deg2rad);
-  curr_ypos_reading = (r_n + walt)*clat*sin(wlon*deg2rad);
-}
-
 
 void CLI()
 {

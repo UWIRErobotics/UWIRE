@@ -5,12 +5,13 @@
 #define RF_BAUD       2400
 #define BRAIN_BAUD    9600
 #define LIDAR_BAUD    250000
-#define GPS_BAUD	  38400
+#define GPS_BAUD	  9600
 
 
 /********** FORCE CONSTANTS **********/
 #define SONAR_FORCE 24000
 #define LIDAR_FORCE 16000
+#define BRUTE_FORCE 10000
 
 
 /********** MESSAGE HEADERS **********/
@@ -18,9 +19,19 @@
 #define COMM_TEST      0xFF
 #define RemoteControl  0x55
 
-#define FORCE_HEADER_X 0xF1
-#define FORCE_HEADER_Y 0xF2
+#define FORCE_X_POS    0xF2
+#define FORCE_X_NEG    0xF3
+#define FORCE_Y_POS    0xF8
+#define FORCE_Y_NEG    0xF9
 
+#define GPS_time       0xA0
+#define GPS_speed      0xA1
+#define GPS_course     0xA2
+#define GPS_latitude   0xA4
+#define GPS_longitude  0xA8
+#define GPS_ERROR      0xAF
+
+#define Sonar_FORCE	   0x70
 #define Sonar1         0x71	// all 'Sonar#' def's are
 #define Sonar2         0x72	// also their respective
 #define Sonar3         0x74	// 7-bit I2C addresses
@@ -30,15 +41,23 @@
 #define Radar2         0x94
 #define Radar3         0x98
 
-#define GPS_time       0xA0
-#define GPS_speed      0xA1
-#define GPS_course     0xA2
-#define GPS_latitude   0xA4
-#define GPS_longitude  0xA8
-#define GPS_RAW        0xAF	//doubt this one will ever be used
-
 
 /********** UNIONS **********/
+typedef union
+{
+	uint8_t container;
+	struct {
+		uint8_t a : 1;
+		uint8_t b : 1;
+		uint8_t c : 1;
+		uint8_t d : 1;
+		uint8_t e : 1;
+		uint8_t f : 1;
+		uint8_t g : 1;
+		uint8_t h : 1;
+	};
+}bit8;
+
 typedef union
 {
 	uint8_t container;
