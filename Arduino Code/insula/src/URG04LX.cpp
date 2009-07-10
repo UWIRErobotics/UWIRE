@@ -3,7 +3,7 @@
 #include <math.h>
 
 #define MAX_DIST	4000
-#define MIN_DIST    100
+#define MIN_DIST    75
 #define THRESHOLD   50
 
 
@@ -32,8 +32,6 @@ void URG04LX::supertest (void)
 	uint16_t num_msr = 0;
 
 	num_msr = distAcq();
-
-	laser(0);	//disable ranging
 
 	BruteCalc(num_msr);
 
@@ -103,10 +101,9 @@ uint16_t URG04LX::distAcq (void)
 
 void URG04LX::BruteCalc(uint16_t num)
 {
-
 //  temp variables
-	double x_distance, y_distance, raw_distance;
-	double x_force,    y_force;
+	double raw_distance, raw_squared;
+	double x_force, y_force;
 
 //	angle measurement; 0[deg] is to our right, and we start one step behind that
 	double 	incre  = (4.0*M_PI / 1024.0),  // (2)*[2PI/1024] increment
@@ -121,21 +118,20 @@ void URG04LX::BruteCalc(uint16_t num)
 	{
 		if(LidarData[i] != 0)
 		{
-			raw_distance = (float) LidarData[i];
-			x_distance   = raw_distance * cos(angle);
-			y_distance   = raw_distance * sin(angle);
+			raw_distance = (float)LidarData[i] / 100.0;
+		//	raw_squared  = raw_distance*raw_distance;
 
-			x_force = ( (BRUTE_FORCE / raw_distance) * (x_distance / raw_distance) );
-			y_force = ( (BRUTE_FORCE / raw_distance) * (y_distance / raw_distance) );
+			x_force = ( (LIDAR_FORCE / raw_distance) * cos(angle) );
+			y_force = ( (LIDAR_FORCE / raw_distance) * sin(angle) );
 
 			cumulative_x += (signed int)x_force;
 			cumulative_y += (signed int)y_force;
 		}
 	}
 
-/*	Serial0.println();
+	Serial0.println();
 	Serial0.print("Fx = ");	Serial0.println(cumulative_x, DEC);
-	Serial0.print("Fy = ");	Serial0.println(cumulative_y, DEC);	*/
+	Serial0.print("Fy = ");	Serial0.println(cumulative_y, DEC);
 }
 
 
@@ -150,20 +146,16 @@ void URG04LX::send_force (void)
 	if 	 (255 < abs(cumulative_y))		cogzilla_info.low  = 255;
 	else								cogzilla_info.low  = abs(cumulative_y);
 
-//  send x
+//  send x, reverse what it should be (simplest fix)
 	if(cumulative_x < 0)
-		Brain.write(FORCE_X_NEG);
-	else
 		Brain.write(FORCE_X_POS);
+	else
+		Brain.write(FORCE_X_NEG);
 
 	Brain.write(cogzilla_info.high);
 
-//	send y
-	if(cumulative_y < 0)
-		Brain.write(FORCE_Y_NEG);
-	else
-		Brain.write(FORCE_Y_POS);
-
+//	send y (always same sign)
+	Brain.write(FORCE_Y);
 	Brain.write(cogzilla_info.low);
 }
 

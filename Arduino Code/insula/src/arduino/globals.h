@@ -9,9 +9,8 @@
 
 
 /********** FORCE CONSTANTS **********/
-#define SONAR_FORCE 24000
-#define LIDAR_FORCE 16000
-#define BRUTE_FORCE 10000
+#define SONAR_FORCE 10000
+#define LIDAR_FORCE 75.1
 
 
 /********** MESSAGE HEADERS **********/
@@ -21,8 +20,7 @@
 
 #define FORCE_X_POS    0xF2
 #define FORCE_X_NEG    0xF3
-#define FORCE_Y_POS    0xF8
-#define FORCE_Y_NEG    0xF9
+#define FORCE_Y    	   0xF8
 
 #define GPS_time       0xA0
 #define GPS_speed      0xA1

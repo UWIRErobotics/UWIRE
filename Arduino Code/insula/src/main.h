@@ -15,6 +15,7 @@ void check_msg	();
 void RC_mode	();
 void Lidar_Send ();
 void Sonar_calc	();
+void Sonar_squared();
 
 void setup		();
 int  main		();
