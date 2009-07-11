@@ -153,6 +153,7 @@ SIGNAL(SIG_USART3_RECV)
 //	start of new packet
 	if ('$' == c)
 	{
+		digitalWrite(27, HIGH);
 		comma       	 	  = 0x0;
 		GPS_counter 	 	  = 0x0;
 		GPS_flags.container	  = 0x0;
@@ -171,40 +172,11 @@ SIGNAL(SIG_USART3_RECV)
 
 	else if (0xA == c)	//end of packet
 	{
-		Serialflag.flag3 = 0x3;
+		digitalWrite(27, LOW);
 
-		if(!(GPS_flags.a))
-		{
-			byte16 temp16;
-			byte32 temp32;
-
-			temp16.container = GPS_package.speed;
-			Brain.write(GPS_speed);
-			Brain.write(temp16.high);
-			Brain.write(temp16.low);
-
-			temp16.container = GPS_package.course;
-			Brain.write(GPS_course);
-			Brain.write(temp16.high);
-			Brain.write(temp16.low);
-
-			temp32.container = GPS_package.latitude;
-			Brain.write(GPS_latitude);
-			Brain.write(temp32.highest);
-			Brain.write(temp32.high);
-			Brain.write(temp32.low);
-			Brain.write(temp32.lowest);
-
-			temp32.container = GPS_package.longitude;
-			Brain.write(GPS_longitude);
-			Brain.write(temp32.highest);
-			Brain.write(temp32.high);
-			Brain.write(temp32.low);
-			Brain.write(temp32.lowest);
-		}
-
-		for(uint8_t i = 0; i <= GPS_counter; i++)	//DEBUG ONLY
-			Serial0.print(GPS_buffer[i]);
+		if(!(GPS_flags.a))	Serialflag.flag3 = 0x3;
+/*		for(uint8_t i = 0; i <= GPS_counter; i++)	//DEBUG ONLY
+			Serial0.print(GPS_buffer[i]);			*/
 	}
 
 	else if ('.' != c)	//ignore decimals
@@ -230,9 +202,7 @@ SIGNAL(SIG_USART3_RECV)
 
 			case 2://status
 			{
-				if('A' != c)
-					GPS_flags.a = 0x1;						//set 'bad status' flag
-/*					Serial0.println("Status invalid!");		//DEBUG ONLY */
+				if('A' != c)	GPS_flags.a = 0x1;		//set 'bad status' flag
 
 				break;
 			}

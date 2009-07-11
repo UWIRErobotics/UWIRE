@@ -17,11 +17,6 @@ URG04LX::URG04LX()
 	for(int i = 0; i < 17; i++)
 		distance_msg[i] = msg[i];
 
-	for(int i = 0; i < 128; i++)
-	{
-		objects[i].start = 0;
-		objects[i].width = 0;
-	}
 }
 
 
@@ -147,11 +142,8 @@ void URG04LX::send_force (void)
 	else								cogzilla_info.low  = abs(cumulative_y);
 
 //  send x, reverse what it should be (simplest fix)
-	if(cumulative_x < 0)
-		Brain.write(FORCE_X_POS);
-	else
-		Brain.write(FORCE_X_NEG);
-
+	if(cumulative_x < 0)	Brain.write(FORCE_X_POS);
+	else					Brain.write(FORCE_X_NEG);
 	Brain.write(cogzilla_info.high);
 
 //	send y (always same sign)

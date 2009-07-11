@@ -3,14 +3,14 @@
 
 /********** COMM. LINKS **********/
 #define RF_BAUD       2400
-#define BRAIN_BAUD    9600
+#define BRAIN_BAUD    19200
 #define LIDAR_BAUD    250000
-#define GPS_BAUD	  9600
+#define GPS_BAUD	  38400
 
 
 /********** FORCE CONSTANTS **********/
 #define SONAR_FORCE 10000
-#define LIDAR_FORCE 75.1
+#define LIDAR_FORCE 55.1
 
 
 /********** MESSAGE HEADERS **********/

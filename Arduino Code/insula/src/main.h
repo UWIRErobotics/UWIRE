@@ -12,10 +12,9 @@
 /*****MAIN FUNCTIONS*****/
 void CLI		(char *, uint8_t);
 void check_msg	();
-void RC_mode	();
 void Lidar_Send ();
 void Sonar_calc	();
-void Sonar_squared();
+void RC_mode	(){}
 
 void setup		();
 int  main		();
