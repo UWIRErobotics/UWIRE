@@ -159,7 +159,7 @@ static void matrix_print(float* A, int m, int n)
         Serial0.print("| ");
         for(j=0;j<n;j++)
         {
-            Serial0.print(A[n*i+j]*10000.0);
+            Serial0.print(A[n*i+j]);
             Serial0.print(" " );
         }
         Serial0.print("|\n");

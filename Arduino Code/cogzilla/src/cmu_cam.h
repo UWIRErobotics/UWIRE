@@ -25,10 +25,16 @@ public:
 	bool ack_recieved(bool colon_expected);
 	char read_cmu_byte();
 	void setup_cmu_cam(HardwareSerial *serial_port );
-	bool track_colour();
+	bool track_stop_sign();
+	bool track_red_light();
+	void flush_cam();
 
 	bool stop_sign_in_view;
 	char stop_sign_track_info[8];
+
+	bool red_light_in_view;
+	char red_light_track_info[8];
+
 };
 
 /** OBJECT 'DECLARATION' **/

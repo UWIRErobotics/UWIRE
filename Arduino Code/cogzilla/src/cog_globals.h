@@ -50,4 +50,9 @@
 #define ZONE_5_Y -4573235
 
 
+/**************SPEED CONSTANTS*****************/
+#define FAST_SPEED 15
+#define SLOW_SPEED 12
+#define DRAG_SPEED 15 //amp this up after testing.
+
 #endif /* COG_GLOBALS_H_ */

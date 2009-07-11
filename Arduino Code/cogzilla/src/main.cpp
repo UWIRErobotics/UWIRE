@@ -3,6 +3,7 @@
 /**************** UPDATE FLAGS/VARIABLES ********/
 bool new_gps_data = false;
 bool new_force_data = false;
+bool just_processed_stop_sign = false;
 
 int set_angle=1300;
 int set_speed=0;
@@ -13,6 +14,7 @@ float curr_velocity_reading;
 float curr_heading_reading = 3.78771354267809;
 float curr_xpos_best_estimate = 0;
 float curr_ypos_best_estimate = 0;
+float curr_heading_best_estimate = 0;
 float curr_zone=0;
 
 int force_x;
@@ -167,6 +169,9 @@ void insula_read()
 void update_zones()
 {
 	float distance_to_zone;
+	curr_zone = 0;
+
+
 
 	distance_to_zone = sqrt (sq(curr_xpos_best_estimate - ZONE_2_X) + sq(curr_ypos_best_estimate - ZONE_2_Y));
 	if (distance_to_zone<=5)
@@ -188,18 +193,74 @@ void update_zones()
 	distance_to_zone = sqrt (sq(curr_xpos_best_estimate - ZONE_1_X) + sq(curr_ypos_best_estimate - ZONE_1_Y));
 	if (distance_to_zone<=5)
 		curr_zone = 1;
+
+	if (curr_zone == 0)
+	{
+		just_processed_stop_sign = false; //react to stop signs again.
+	}
 }
+
+
+void camera_check()
+{
+	while(Serial0.read()!='e')
+	{
+		cmu_cam1.track_stop_sign();
+		if (cmu_cam1.stop_sign_in_view)
+			Serial0.println("Found Stop Sign");
+		else
+			Serial0.println("No Stop Sign");
+
+		cmu_cam1.flush_cam();
+
+		cmu_cam1.track_red_light();
+		if (cmu_cam1.red_light_in_view)
+			Serial0.println("Found Red Light");
+		else
+			Serial0.println("No Red Light");
+
+		cmu_cam1.flush_cam();
+
+	}
+}
+
 
 void drag_drive()
 {
-
+	int steering_angle = 1325;
+	neuro_bot.set_speed(DRAG_SPEED);
+	neuro_bot.set_turn_angle(steering_angle);
+	//Steering Control
+	while (Serial0.read()!='e')
+	{
+		insula_read();
+		if (new_force_data)
+		{
+			if (force_x < 0)
+			{
+				steering_angle = (0.00768900 * sq((float)force_x)) + 1300;
+				//steering_angle = (0.00307574 * sq((float)force_x)) + 1300;
+				neuro_bot.set_turn_angle(steering_angle);
+			}
+			else
+			{
+				steering_angle = (0.00615148 * sq((float)force_x - 255.0)) + 900;
+				//steering_angle = (0.002306805 * sq((float)force_x - 255.0)) + 1200;
+				neuro_bot.set_turn_angle(steering_angle);
+			}
+			Serial0.println(force_x);
+			new_force_data = false;
+			Serial0.println(steering_angle);
+		}
+	}
+	neuro_bot.set_speed(0);
 }
 
 void track_drive()
 {
 	//ekf matrices;
 
-	bool ignore_gps = false;
+	bool ignore_cam = false;
 
 	float mean_predicted [STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 	float mean_best [STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
@@ -233,17 +294,21 @@ void track_drive()
 	char user_input = 'a';
 	int steering_angle = 0;
 
-	Serial0.println("Use GPS?");
+	//Check if Cam needs to be used
+	Serial0.println("Use Cam?");
 	while(Serial0.available()<=0){};
 	user_input = Serial0.read();
-	if (user_input == 'n' || user_input =='N')
+	if (user_input =='n' || user_input == 'N')
 	{
-		ignore_gps = true;
-		Serial0.println("Ignoring GPS!");
+		ignore_cam = true;
+		Serial0.println("Ignoring CAM!");
 	}
 	else
+		ignore_cam = false;
+
+
+	if (false)
 	{
-		ignore_gps = false;
 		while(!new_gps_data)
 		{
 			insula_read();
@@ -256,14 +321,15 @@ void track_drive()
 		control_u[0][0] = curr_velocity_reading;
 		new_gps_data = false;
 	}
-	neuro_bot.set_speed(15);
+
+	neuro_bot.set_speed(FAST_SPEED);
 
 	while (user_input!='e')
 	{
 		user_input = Serial0.read();
 		insula_read();
 
-		if (new_gps_data && !ignore_gps) //propagate EKF
+		if (new_gps_data && false) //propagate EKF
 		{
 			/**********Propagate Motion Model*********************/
 			mean_predicted[0][0] = last_best[0][0] + control_u[0][0]*cos(last_best[2][0]);
@@ -299,7 +365,7 @@ void track_drive()
 
 			matrix_multiply((float*)temp,(float*)temp2,STATE_N,STATE_N,STATE_N,(float*)kalman_gain);
 
-			matrix_print((float*)kalman_gain,STATE_N,STATE_N);
+
 			//Calculate best mean
 			matrix_subtraction((float*)input_matrix,(float*)mean_predicted,STATE_N,STATE_M,(float*)single_temp);
 			matrix_multiply((float*)kalman_gain,(float*)single_temp,STATE_N,STATE_N,STATE_M,(float*)single_temp1);
@@ -309,35 +375,46 @@ void track_drive()
 			matrix_subtraction((float*)identity_matrix,(float*)temp,STATE_N,STATE_N,(float*)temp1);
 			matrix_multiply((float*)temp1,(float*)variance_predicted,STATE_N,STATE_N,STATE_N,(float*)variance_best);
 
+
 			//Update Variables and cleanup
 			curr_xpos_best_estimate = mean_best[0][0];
 			curr_ypos_best_estimate = mean_best[1][0];
+			curr_heading_best_estimate = mean_best[2][0];
 			control_u[0][0] = curr_velocity_reading;
 			control_u[1][0] = last_best[2][0] - mean_best[2][0];
-
 			last_best[0][0] = mean_best[0][0];
 			last_best[1][0] = mean_best[1][0];
 			last_best[2][0] = mean_best[2][0];
 			new_gps_data = false;
 			update_zones();
+			Serial0.print("Current Zone:");
+			Serial0.println(curr_zone);
 		}
 
-		/*if(new_gps_data)
+		if (curr_zone != 0)
+			neuro_bot.set_speed(SLOW_SPEED);
+
+		if (!ignore_cam)
 		{
-			Serial0.print(curr_velocity_reading);
-			Serial0.print(",");
-			Serial0.print(curr_heading_reading);
-			Serial0.print(",");
-			Serial0.print(curr_xpos_reading);
-			Serial0.print(",");
-			Serial0.println(curr_ypos_reading);
-			new_gps_data = false;
+			while (cmu_cam1.track_stop_sign() != true){};
+			if (curr_zone == 1 && cmu_cam1.stop_sign_in_view && !just_processed_stop_sign)
+			{
+				neuro_bot.set_speed(0);
+				delay(3000);
+				neuro_bot.set_speed(SLOW_SPEED);
+				just_processed_stop_sign = true; //dont process stop signs until you leave zone.
+			}
 
-		}*/
+			while (cmu_cam1.track_red_light() != true) {};
+			while (curr_zone == 1 && cmu_cam1.red_light_in_view) //till you see the red light
+			{
+				while (cmu_cam1.track_red_light() != true) {};
+			}
+		}
 
+		//Steering Control
 		if (new_force_data)
 		{
-			Serial0.println(force_x);
 			if (force_x < 0)
 			{
 				steering_angle = (0.00768900 * sq((float)force_x)) + 1300;
@@ -348,20 +425,22 @@ void track_drive()
 				steering_angle = (0.00615148 * sq((float)force_x - 255.0)) + 900;
 				neuro_bot.set_turn_angle(steering_angle);
 			}
-
+			Serial0.println(force_x);
 			new_force_data = false;
 			Serial0.println(steering_angle);
 		}
 
+
 	}
 	neuro_bot.set_speed(0);
+
+
+
 }
 
 void CLI()
 {
-
 	char input = Serial0.read();
-
 	if (input == 'r')
 	{
 		Serial0.println("Entering RC Drive");
@@ -381,6 +460,13 @@ void CLI()
 		track_drive();
 		Serial0.println("Exiting Track Drive");
 	}
+
+	if (input == 'c')
+	{
+		Serial0.println("Cam Check");
+		camera_check();
+		Serial0.println("Exiting Cam Check");
+	}
 }
 
 void setup()
@@ -393,9 +479,10 @@ void setup()
 	neuro_bot.setup_vehicle();
 	Serial0.println("Vehicle is ready");
 
-	Serial0.println("Setting up Camera");
+	Serial0.println("Setting Up Camera");
 	//cmu_cam1.setup_cmu_cam(&Serial2);
-	Serial0.println("Camera is ready");
+	//cmu_cam1.flush_cam();
+	Serial0.println("Camera Setup");
 }
 
 
