@@ -20,7 +20,7 @@ volatile uint8_t 		comma 			=  0x00;
 		 bit8 			GPS_flags;
 
 // LIDAR buffers
-volatile unsigned char 	URG_buffer[600] = {0x00};
+volatile unsigned char 	URG_buffer[640] = {0x00};
 volatile uint16_t 		URG_counter 	=  0x00;
 
 
@@ -133,7 +133,7 @@ SIGNAL(SIG_USART2_RECV)
 {
 	unsigned char c = UDR2;
 
-//  if the data will be data we need to parse, skip ring buffer
+//  skip ring buffer
 	if(0x3 == Serialflag.flag2)
 	{
 		URG_buffer[URG_counter] = UDR2;

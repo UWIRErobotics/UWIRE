@@ -8,7 +8,7 @@
 #define RX_BUFFER_SIZE  256
 
 // Preinstantiate buffers & flags here for global access
-extern volatile unsigned char GPS_buffer[128], URG_buffer[600];
+extern volatile unsigned char GPS_buffer[128], URG_buffer[640];
 extern volatile uint16_t 	  GPS_counter,     URG_counter;
 extern 		   _GPS_package   GPS_package;
 

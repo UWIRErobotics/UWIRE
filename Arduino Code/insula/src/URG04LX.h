@@ -29,9 +29,9 @@ private:
 	void 	BruteCalc	(uint16_t);
 	void	send_force	(void);
 
-	char       distance_msg [17];	//outgoing message
-	uint16_t   LidarData    [512];
-	signed int cumulative_x, cumulative_y;
+	uint8_t 	distance_msg[17];	//outgoing message
+	uint16_t 	LidarData   [512];
+	signed int 	cumulative_x, cumulative_y;
 };
 
 

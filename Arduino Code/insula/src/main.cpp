@@ -10,56 +10,23 @@ int main(void)
 	do
 	{
 		if(0x3 == Serialflag.flag3)
-		{
-			byte16 temp16;
-			byte32 temp32;
+			GPS_send();
 
-			temp16.container = GPS_package.speed;
-			Brain.write(GPS_speed);
-			Brain.write(temp16.high);
-			Brain.write(temp16.low);
-
-			temp16.container = GPS_package.course;
-			Brain.write(GPS_course);
-			Brain.write(temp16.high);
-			Brain.write(temp16.low);
-
-			temp32.container = GPS_package.latitude;
-			Brain.write(GPS_latitude);
-			Brain.write(temp32.highest);
-			Brain.write(temp32.high);
-			Brain.write(temp32.low);
-			Brain.write(temp32.lowest);
-
-			temp32.container = GPS_package.longitude;
-			Brain.write(GPS_longitude);
-			Brain.write(temp32.highest);
-			Brain.write(temp32.high);
-			Brain.write(temp32.low);
-			Brain.write(temp32.lowest);
-
-			Serialflag.flag3 = 0x0;
-		}
-
-
-		check_msg();
-
-		if (functionflags.upper)
-		{
+		if (functionflags.upper) {
 			digitalWrite(24, HIGH);
 			Lidar.supertest();
 			digitalWrite(24, LOW);
 		}
 
-		if (functionflags.lower)
-		{
+		if (functionflags.lower) {
 			digitalWrite(26, HIGH);
 			Sonar_calc();
 			digitalWrite(26, LOW);
 		}
 
-		delay(25);
+		check_msg();
 
+		delay(25);
 	} while(1);
 
 	return 0;
@@ -73,6 +40,12 @@ void setup()
 	pinMode(26, OUTPUT);	pinMode(27, OUTPUT);
 
 	functionflags.container = 0x00;
+/********** COMM. LINKS **********/
+	#define RF_BAUD       2400
+	#define BRAIN_BAUD    19200
+	#define LIDAR_BAUD    250000
+	#define GPS_BAUD	  38400
+/********************************/
 
 //  start user console
 	Serial0.begin(19200);
@@ -80,45 +53,29 @@ void setup()
 
 	Brain.begin  (BRAIN_BAUD); 	  // Serial1
 	Serial0.print ("Brain Baud = ");  Serial0.println(BRAIN_BAUD, DEC);
-	digitalWrite(22, HIGH);
-	delay(75);
+	digitalWrite(22, HIGH);		delay(75);
 
 	Lidar.begin  (LIDAR_BAUD);	  // Serial2
 	Serial0.print ("Lidar Baud = ");  Serial0.println(LIDAR_BAUD, DEC);
-	digitalWrite(23, HIGH);
-	delay(75);
+	digitalWrite(23, HIGH);		delay(75);
 
 	GPS.begin    (GPS_BAUD);	  // Serial3
 	Serial0.print ("GPS   Baud = ");  Serial0.println(GPS_BAUD,   DEC);
-	digitalWrite(25, HIGH);
-	delay(75);
+	digitalWrite(25, HIGH);		delay(75);
 
-/*	pinMode(53,INPUT);	vw_set_rx_pin(53);
-    vw_setup(RF_BAUD);
+	pinMode(36,INPUT);		vw_set_rx_pin(36);
+    vw_setup(RF_BAUD);		vw_rx_start  ();
 	Serial0.print ("RF    Baud = ");  Serial0.println(RF_BAUD,    DEC);
-    vw_rx_start  ();														*/
 
-	Serial0.println(); delay(500);
+	Serial0.println(); 			delay(500);
+
+	Serial0.flush();  Brain.flush();  Lidar.flush();  GPS.flush();
 }
 
 
 
 void check_msg(void)
 {
-/*  check RF
-	uint8_t  buff_rf      [VW_MAX_MESSAGE_LEN];
-	uint8_t  len_rf   =    VW_MAX_MESSAGE_LEN;
-	if(vw_get_message(buff_rf, &len_rf))
-	{
-		Serial0.print("RF: ");
-		for(uint8_t i = 0; i < len_rf; i++)
-			Serial0.print(buff_rf[i]);
-		Serial0.println();
-
-		CLI((char *) buff_rf, len_rf);
-	}											*/
-
-
 	if(Serial0.available() > 0)
 	{
 		char 	buff_console [VW_MAX_MESSAGE_LEN];	//same size as RF buffer, I guess
@@ -130,12 +87,36 @@ void check_msg(void)
 		CLI(buff_console, len_console);
 	}
 
-	if(Lidar.available() > 0)
+//  check RF
+	uint8_t  buff_rf      [VW_MAX_MESSAGE_LEN];
+	uint8_t  len_rf   =    VW_MAX_MESSAGE_LEN;
+	if(vw_get_message(buff_rf, &len_rf))
 	{
-		while(Lidar.available() > 0)
-			Serial0.write( Lidar.read() );
+		Serial0.print("RF: ");
+		for(uint8_t i = 0; i < len_rf; i++)
+			Serial0.print(buff_rf[i]);
+		Serial0.println();
+
+		CLI((char *) buff_rf, len_rf);
 	}
 
+	if(Brain.available() > 0)
+		while(Brain.available() > 0)
+			Serial0.write( Brain.read() );
+
+	if(Lidar.available() > 0)
+	{
+		for(uint16_t i = 0; i < URG_counter; i++)
+			Serial0.print(URG_buffer[i]);
+
+		Serial0.println();
+		Serial0.println();
+
+		while(Lidar.available() > 0)
+			Serial0.write( Lidar.read() );
+
+		Serial0.println();
+	}
 }
 
 
@@ -298,8 +279,6 @@ void Sonar_calc()
 	double cum_force_x = 0;
 	double cum_force_y = 0;
 
-	cum_force_x = 0;
-	cum_force_y = 0;
 	for(int i=0;i<NUM_READINGS;i++)
 	{
 		obs_distance[i] = Sonar.range(Sonar1 + 7*i); //for now this is just 0x71 and 0x72...add lidar update here.
@@ -338,4 +317,37 @@ void Sonar_calc()
 //	send y (always same sign)
 	Brain.write(FORCE_Y);
 	Brain.write(cogzilla_info.low);
+}
+
+
+void GPS_send()
+{
+	byte16 temp16;
+	byte32 temp32;
+
+	temp16.container = GPS_package.speed;
+	Brain.write(GPS_speed);
+	Brain.write(temp16.high);
+	Brain.write(temp16.low);
+
+	temp16.container = GPS_package.course;
+	Brain.write(GPS_course);
+	Brain.write(temp16.high);
+	Brain.write(temp16.low);
+
+	temp32.container = GPS_package.latitude;
+	Brain.write(GPS_latitude);
+	Brain.write(temp32.highest);
+	Brain.write(temp32.high);
+	Brain.write(temp32.low);
+	Brain.write(temp32.lowest);
+
+	temp32.container = GPS_package.longitude;
+	Brain.write(GPS_longitude);
+	Brain.write(temp32.highest);
+	Brain.write(temp32.high);
+	Brain.write(temp32.low);
+	Brain.write(temp32.lowest);
+
+	Serialflag.flag3 = 0x0;
 }
