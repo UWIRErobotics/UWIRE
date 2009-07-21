@@ -15,10 +15,12 @@ public:
    void     getInfo  (uint8_t);	  // 'VV' & 'PP' & 'II' commands
    void     laser    (uint8_t);	  // 'BM' & 'QT' commands
    void     baudRate (uint32_t);  // 'SS' command
-   uint16_t distAcq  (void); 	  // 'MD'command
    void     setMotor (uint16_t);  // 'CR' command
    void     timeInfo (void);	  // 'TM' command, but we only support GETTING time, for now
    void     reset    (void);	  // 'RS' command
+
+   void     setSerial(uint8_t);	  // turn regular serial on / off
+   uint16_t distAcq  (void); 	  // 'MD'command
 
    void     supertest(void);
 

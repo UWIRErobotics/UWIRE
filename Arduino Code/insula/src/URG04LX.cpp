@@ -2,10 +2,6 @@
 #include <float.h>
 #include <math.h>
 
-#define MAX_DIST	4000
-#define MIN_DIST    75
-#define THRESHOLD   50
-
 
 URG04LX::URG04LX()
        : HardwareSerial(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2)
@@ -22,6 +18,8 @@ URG04LX::URG04LX()
 
 void URG04LX::supertest (void)
 {
+	setSerial(OFF);
+
 //	enable ranging
 	laser(1);
 
@@ -31,36 +29,38 @@ void URG04LX::supertest (void)
 //	calculate potential field
 	BruteCalc(num_msr);
 
+	Serial0.println();
+	Serial0.print("Fx = ");	Serial0.println(cumulative_x, DEC);
+	Serial0.print("Fy = ");	Serial0.println(cumulative_y, DEC);
+
 //	send force vectors to cogzilla
 	send_force();
 
-//	flush();
+	setSerial(ON);
 }
 
 
 uint16_t URG04LX::distAcq (void)
 {
-	uint8_t  lines   = 0x00;	// counts <LF>'s
-	uint8_t  header  = 0x00;
+	uint8_t  header  = 0x00;	// <LF>'s in header
+	uint8_t  lines   = 0x00;	// <LF>'s in data
 	uint16_t bytecnt = 0x00;	// gross bytes
 	uint16_t meascnt = 0x00;	// parsed bytes
 
-//  turn off regular serial reading
-	URG_counter      = 0x0;
-	Serialflag.flag2 = 0x3;
-
+//  send the "MD" command
 	write(distance_msg, 16);
 
-	while(URG_counter < 575);	//	incoming data is always 580 bytes
+	while(URG_counter < 585);	//	incoming data is always 588 bytes
 /*	Serial0.println("done waiting!");	*/
 
+
 //  header (skip)
+//  if a <LF> is found, check how many characters precede it;
+//  5 characters means the time-stamp, and the end of header
 	for(uint8_t line_char = 0x0, flag = 0x0; flag != 0xFF; bytecnt++)
 	{
 		if		(URG_counter < bytecnt)		break;
 
-/* if a <LF> is found, check how many characters precede it; *
- * 5 characters means the time-stamp, and the end of header  */
 		else if	( 0xA == URG_buffer[bytecnt] )
 		{
 			if(5 == line_char)	flag = 0xFF;
@@ -74,7 +74,7 @@ uint16_t URG04LX::distAcq (void)
 
 
 //  data section
-	for(; meascnt < 257; bytecnt+= 2)				//should always receive 19 lines
+	for(; meascnt < 257; bytecnt+= 2)
 	{
 		if( (0xA == URG_buffer[bytecnt]) || (0xA == URG_buffer[bytecnt + 1]) )
 			lines++;	//skip <LF> & 'sum' characters
@@ -90,8 +90,9 @@ uint16_t URG04LX::distAcq (void)
 
 			meascnt++;
 		}
-	}///for loop
+	}
 
+//  DEBUG only
 	if(meascnt != 257)
 	{
 		Serial0.print("Received total = ");
@@ -106,21 +107,15 @@ uint16_t URG04LX::distAcq (void)
 		Serial0.println();
 	}
 
-	Serialflag.flag2 = 0x0;	//turn ring-buffer back on
-
 	return meascnt;
 }
 
 
 void URG04LX::BruteCalc(uint16_t num)
 {
-//  temp variables
-	double raw_distance;
-	double x_force, y_force;
-
-//	angle measurement; 0[deg] is to our right, and we start one step behind that
-	double 	incre  = (4.0*M_PI / 1024.0),  // (2)*[2PI/1024] increment
-			angle = -incre;
+	double raw_distance = 0, angle   = 0;
+	double x_force = 0, y_force = 0;
+	double incre =(4.0*M_PI / 1024.0);  // (2)*[2PI/1024] increment
 
 //	reset force vectors
 	cumulative_x = 0;
@@ -129,7 +124,7 @@ void URG04LX::BruteCalc(uint16_t num)
 //  go through all objects...
 	for(uint16_t i = 0; i <= num; i++, angle += incre)
 	{
-		if(LidarData[i] != 0)
+		if(0 != LidarData[i])
 		{
 			raw_distance = (float)LidarData[i] / 100.0;
 
@@ -140,10 +135,6 @@ void URG04LX::BruteCalc(uint16_t num)
 			cumulative_y += (signed int)y_force;
 		}
 	}
-
-	Serial0.println();
-	Serial0.print("Fx = ");	Serial0.println(cumulative_x, DEC);
-	Serial0.print("Fy = ");	Serial0.println(cumulative_y, DEC);
 }
 
 
@@ -163,7 +154,7 @@ void URG04LX::send_force (void)
 	else					Brain.write(FORCE_X_NEG);
 	Brain.write(cogzilla_info.high);
 
-//	send y (always same sign)
+//	send y, always (+)
 	Brain.write(FORCE_Y);
 	Brain.write(cogzilla_info.low);
 }
@@ -307,7 +298,20 @@ void URG04LX::reset(void)
 	write(msg, 3);
 }
 
+void URG04LX::setSerial(uint8_t command)
+{
+//	turn regular serial ON
+	if(command) {
+		flush();
+		Serialflag.flag2 = 0x0;
+	}
 
+//  turn regular serial OFF
+	else {
+		URG_counter      = 0x0;
+		Serialflag.flag2 = 0x3;
+	}
+}
 
 /** OBJECT DECLARATION **/
 	   URG04LX Lidar;

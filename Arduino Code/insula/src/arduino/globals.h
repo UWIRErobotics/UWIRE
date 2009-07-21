@@ -1,9 +1,18 @@
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
-/********** FORCE CONSTANTS **********/
-#define SONAR_FORCE 10000
+#define ON	1
+#define OFF	0
+
+
+/*********** LIDAR CONSTANTS *********/
 #define LIDAR_FORCE 55.1
+#define MAX_DIST	4000  //in [mm]
+#define MIN_DIST    75	  //
+
+/********** SONAR CONSTANTS **********/
+#define SONAR_FORCE  10000
+#define NUM_READINGS 2
 
 
 /********** MESSAGE HEADERS **********/

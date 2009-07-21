@@ -73,7 +73,6 @@ void setup()
 }
 
 
-
 void check_msg(void)
 {
 	if(Serial0.available() > 0)
@@ -104,19 +103,10 @@ void check_msg(void)
 		while(Brain.available() > 0)
 			Serial0.write( Brain.read() );
 
+//	we should never get anything from LIDAR!
 	if(Lidar.available() > 0)
-	{
-		for(uint16_t i = 0; i < URG_counter; i++)
-			Serial0.print(URG_buffer[i]);
-
-		Serial0.println();
-		Serial0.println();
-
 		while(Lidar.available() > 0)
 			Serial0.write( Lidar.read() );
-
-		Serial0.println();
-	}
 }
 
 
@@ -167,7 +157,6 @@ void CLI(char *msg, uint8_t length)
 		if(functionflags.lower)	Serial0.println("SONAR on");
 		else					Serial0.println("SONAR off");
 	}
-
 
 /*******************GPS configuration *************************/
 	else if('1' == *msg)	GPS.stop_feed(GPS.GGA);
@@ -266,60 +255,6 @@ void CLI(char *msg, uint8_t length)
 }
 
 
-#define NUM_READINGS 2
-void Sonar_calc()
-{
-	double obs_distance[NUM_READINGS];
-	double obs_angle   [NUM_READINGS] = {2.35619,0.7853981};
-	double x_distance  [NUM_READINGS];
-	double y_distance  [NUM_READINGS];
-	double x_force     [NUM_READINGS];
-	double y_force     [NUM_READINGS];
-
-	double cum_force_x = 0;
-	double cum_force_y = 0;
-
-	for(int i=0;i<NUM_READINGS;i++)
-	{
-		obs_distance[i] = Sonar.range(Sonar1 + 7*i); //for now this is just 0x71 and 0x72...add lidar update here.
-
-		x_distance[i] = obs_distance[i] * (cos(obs_angle[i]));
-		y_distance[i] = obs_distance[i] * (sin(obs_angle[i]));
-
-		x_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (x_distance[i]/obs_distance[i]);
-		y_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (y_distance[i]/obs_distance[i]);
-
-		cum_force_x  += x_force[i];
-		cum_force_y  += y_force[i];
-	}
-
-	Serial0.print  ("Sonar:\t Fx = ");
-	Serial0.print  (cum_force_x);
-	Serial0.print  (",\t Fy = ");
-	Serial0.println(cum_force_y);
-
-	byte16 cogzilla_info;	cogzilla_info.container = 0;
-//	fill x
-	if 	 (255 < abs(cum_force_x))		cogzilla_info.high = 255;
-	else								cogzilla_info.high = abs(cum_force_x);
-//	fill y
-	if 	 (255 < abs(cum_force_y))		cogzilla_info.low  = 255;
-	else								cogzilla_info.low  = abs(cum_force_y);
-
-//  send x
-	if(cum_force_x < 0)
-		Brain.write(FORCE_X_NEG);
-	else
-		Brain.write(FORCE_X_POS);
-
-	Brain.write(cogzilla_info.high);
-
-//	send y (always same sign)
-	Brain.write(FORCE_Y);
-	Brain.write(cogzilla_info.low);
-}
-
-
 void GPS_send()
 {
 	byte16 temp16;
@@ -350,4 +285,50 @@ void GPS_send()
 	Brain.write(temp32.lowest);
 
 	Serialflag.flag3 = 0x0;
+}
+
+
+void Sonar_calc()
+{
+	double obs_distance[NUM_READINGS];
+	double obs_angle   [NUM_READINGS] = {2.35619,0.7853981};
+	double x_distance[NUM_READINGS], 	y_distance[NUM_READINGS];
+	double x_force	 [NUM_READINGS], 	y_force	  [NUM_READINGS];
+	double cum_force_x = 0, cum_force_y = 0;
+
+	for(int i=0;i<NUM_READINGS;i++)
+	{
+		obs_distance[i] = Sonar.range(Sonar1 + 7*i); //for now this is just 0x71 and 0x72...add lidar update here.
+
+		x_distance[i] = obs_distance[i] * (cos(obs_angle[i]));
+		y_distance[i] = obs_distance[i] * (sin(obs_angle[i]));
+
+		x_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (x_distance[i]/obs_distance[i]);
+		y_force[i] 	  = (SONAR_FORCE/obs_distance[i]) * (y_distance[i]/obs_distance[i]);
+
+		cum_force_x  += x_force[i];
+		cum_force_y  += y_force[i];
+	}
+
+	Serial0.print  ("Sonar:\t Fx = ");
+	Serial0.print  (cum_force_x);
+	Serial0.print  (",\t Fy = ");
+	Serial0.println(cum_force_y);
+
+	byte16 cogzilla_info;	cogzilla_info.container = 0;
+//	fill x
+	if 	 (255 < abs(cum_force_x))		cogzilla_info.high = 255;
+	else								cogzilla_info.high = abs(cum_force_x);
+//	fill y
+	if 	 (255 < abs(cum_force_y))		cogzilla_info.low  = 255;
+	else								cogzilla_info.low  = abs(cum_force_y);
+
+//  send x
+	if(cum_force_x < 0)		Brain.write(FORCE_X_NEG);
+	else					Brain.write(FORCE_X_POS);
+	Brain.write(cogzilla_info.high);
+
+//	send y, always (+)
+	Brain.write(FORCE_Y);
+	Brain.write(cogzilla_info.low);
 }

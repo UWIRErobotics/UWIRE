@@ -134,7 +134,7 @@ SIGNAL(SIG_USART2_RECV)
 	unsigned char c = UDR2;
 
 //  skip ring buffer
-	if(0x3 == Serialflag.flag2)
+	if(Serialflag.flag2)
 	{
 		URG_buffer[URG_counter] = UDR2;
 		URG_counter++;
