@@ -2,6 +2,12 @@
 #include <float.h>
 #include <math.h>
 
+/*********** LIDAR CONSTANTS *********/
+#define MAX_DIST	 2500  //measured in [mm]
+#define MIN_DIST     66	   //
+#define LIDAR_FORCE  5000
+/*************************************/
+
 
 URG04LX::URG04LX()
        : HardwareSerial(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2)
@@ -21,7 +27,7 @@ void URG04LX::supertest (void)
 	setSerial(OFF);
 
 //	enable ranging
-	laser(1);
+	laser(ON);
 
 //	get & parse raw data
 	uint16_t num_msr = distAcq();
@@ -29,12 +35,13 @@ void URG04LX::supertest (void)
 //	calculate potential field
 	BruteCalc(num_msr);
 
+//	send force vectors to cogzilla
+	send_force();
+
+//	report forces for debugging
 	Serial0.println();
 	Serial0.print("Fx = ");	Serial0.println(cumulative_x, DEC);
 	Serial0.print("Fy = ");	Serial0.println(cumulative_y, DEC);
-
-//	send force vectors to cogzilla
-	send_force();
 
 	setSerial(ON);
 }
@@ -50,13 +57,11 @@ uint16_t URG04LX::distAcq (void)
 //  send the "MD" command
 	write(distance_msg, 16);
 
-	while(URG_counter < 585);	//	incoming data is always 588 bytes
-/*	Serial0.println("done waiting!");	*/
-
-
 //  header (skip)
 //  if a <LF> is found, check how many characters precede it;
 //  5 characters means the time-stamp, and the end of header
+	while(URG_counter < 128);
+
 	for(uint8_t line_char = 0x0, flag = 0x0; flag != 0xFF; bytecnt++)
 	{
 		if		(URG_counter < bytecnt)		break;
@@ -74,6 +79,8 @@ uint16_t URG04LX::distAcq (void)
 
 
 //  data section
+	while(URG_counter < 585);	//	incoming data is always 588 bytes
+
 	for(; meascnt < 257; bytecnt+= 2)
 	{
 		if( (0xA == URG_buffer[bytecnt]) || (0xA == URG_buffer[bytecnt + 1]) )
@@ -85,7 +92,7 @@ uint16_t URG04LX::distAcq (void)
 			LidarData[meascnt] = ( ((URG_buffer[bytecnt] - 0x30) << 6) + (URG_buffer[bytecnt + 1] - 0x30) );
 
 //			filter out bad useless (super small/large) data points
-			if( (LidarData[meascnt] <= MIN_DIST) || (MAX_DIST < LidarData[meascnt]) )
+			if( (LidarData[meascnt] < MIN_DIST)||(MAX_DIST < LidarData[meascnt]) )
 				LidarData[meascnt] = 0;
 
 			meascnt++;
@@ -114,8 +121,8 @@ uint16_t URG04LX::distAcq (void)
 void URG04LX::BruteCalc(uint16_t num)
 {
 	double raw_distance = 0, angle   = 0;
-	double x_force = 0, y_force = 0;
-	double incre =(4.0*M_PI / 1024.0);  // (2)*[2PI/1024] increment
+	double x_force = 0, 	 y_force = 0;
+	double incre =(4.0*M_PI / 1024.0);
 
 //	reset force vectors
 	cumulative_x = 0;
@@ -126,7 +133,7 @@ void URG04LX::BruteCalc(uint16_t num)
 	{
 		if(0 != LidarData[i])
 		{
-			raw_distance = (float)LidarData[i] / 100.0;
+			raw_distance = (float)LidarData[i];
 
 			x_force = ( (LIDAR_FORCE / raw_distance) * cos(angle) );
 			y_force = ( (LIDAR_FORCE / raw_distance) * sin(angle) );

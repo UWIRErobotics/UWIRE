@@ -136,8 +136,8 @@ void CLI(char *msg, uint8_t length)
 	else if('a' == *msg)	Lidar.getInfo('V');
 	else if('b' == *msg)	Lidar.getInfo('P');
 	else if('c' == *msg)	Lidar.getInfo('I');
-	else if('d' == *msg)	Lidar.laser  ( 0 );
-	else if('e' == *msg)	Lidar.laser  ( 1 );
+	else if('d' == *msg)	Lidar.laser  (OFF);
+	else if('e' == *msg)	Lidar.laser  (ON);
 	else if('f' == *msg)	Lidar.timeInfo();
 	else if('g' == *msg)	Lidar.supertest();
 	else if('r' == *msg)	Lidar.reset();
