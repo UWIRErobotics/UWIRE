@@ -15,6 +15,11 @@
 
 #define CMU_RESULT_MX 0
 #define CMU_RESULT_MY 1
+#define CMU_RESULT_X1 2
+#define CMU_RESULT_Y1 3
+#define CMU_RESULT_X2 4
+#define CMU_RESULT_Y2 5
+#define CMU_RESULT_PIX 6
 #define CMU_RESULT_CONF 7
 
 class cmu_cam

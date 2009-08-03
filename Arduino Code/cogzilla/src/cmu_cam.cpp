@@ -86,14 +86,14 @@ bool cmu_cam::track_stop_sign()
 	}
 
 	//Track Colour
-	cam_serial->print("TC 78 93 40 60 16 18");
+	cam_serial->print("TC 60 70 35 45 15 17");
 	cam_serial->write(0x0D);
 
 	while (ack_recieved(false) == false)
 	{
 			cam_serial->flush();
 			//Serial0.println("Command Sent");
-			cam_serial->print("TC 78 93 40 60 16 18");
+			cam_serial->print("TC 60 70 35 45 15 17");
 			cam_serial->write(0x0D); //carriage return
 	}
 
@@ -112,6 +112,11 @@ bool cmu_cam::track_stop_sign()
 				}
 			}
 
+		if (stop_sign_track_info[CMU_RESULT_MX]>0x00 && stop_sign_track_info[CMU_RESULT_MY] > 0x00 && stop_sign_track_info[CMU_RESULT_CONF] > 0x00)
+			stop_sign_in_view = true;
+		else
+			stop_sign_in_view = false;
+
 			//--------------------------delete me later
 			/*Serial0.write(0xFF);
 			Serial0.write(stop_sign_track_info[0]);
@@ -129,14 +134,6 @@ bool cmu_cam::track_stop_sign()
 			Serial0.write(0x0D);*/
 			//--------------------------
 
-			if (stop_sign_track_info[CMU_RESULT_MX]>0x00 && stop_sign_track_info[CMU_RESULT_MY] > 0x00 && stop_sign_track_info[CMU_RESULT_CONF] > 0x00)
-			{
-				stop_sign_in_view = true;
-			}
-			else
-			{
-				stop_sign_in_view = false;
-			}
 			return true;
 	}
 	else
