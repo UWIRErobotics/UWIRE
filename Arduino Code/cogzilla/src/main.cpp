@@ -171,8 +171,6 @@ void update_zones()
 	float distance_to_zone;
 	curr_zone = 0;
 
-
-
 	distance_to_zone = sqrt (sq(curr_xpos_best_estimate - ZONE_2_X) + sq(curr_ypos_best_estimate - ZONE_2_Y));
 	if (distance_to_zone<=5)
 		curr_zone = 2;
@@ -203,32 +201,71 @@ void update_zones()
 
 void camera_check()
 {
-	while(Serial0.read()!='e')
+	char input = Serial0.read();
+	int set_angle = 1300;
+	int set_speed = 0;
+	int del_x = 0;
+	int del_y = 0;
+
+	neuro_bot.set_turn_angle(set_angle);
+	neuro_bot.set_speed(set_speed);
+
+	while(input!='e')
 	{
 		cmu_cam1.track_stop_sign();
 		if (cmu_cam1.stop_sign_in_view)
-			Serial0.println("Found Stop Sign");
+		{
+			del_x = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X2];
+			del_y = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y2];
+
+			Serial0.print("del_x:");
+			Serial0.print(del_x);
+			Serial0.print("   ");
+			Serial0.print("del_y:");
+			Serial0.println(del_y);
+		}
 		else
 			Serial0.println("No Stop Sign");
 
+		if (Serial0.available() > 0)
+		{
+			input = Serial0.read();
+			if (input == 'a')
+			{
+				neuro_bot.set_turn_angle(set_angle+=25);
+				Serial0.print ("Angle Set to:");
+				Serial0.println(set_angle);
+			}
+			else if (input =='d')
+			{
+				neuro_bot.set_turn_angle(set_angle-=25);
+				Serial0.print("Angle Set to:");
+				Serial0.println(set_angle);
+			}
+			else if(input =='w')
+			{
+				neuro_bot.set_speed(set_speed+=5);
+				Serial0.print("Speed Set to:");
+				Serial0.println(set_speed);
+			}
+			else if(input =='s')
+			{
+				neuro_bot.set_speed(set_speed-=5);
+				Serial0.print("Speed Set to:");
+				Serial0.println(set_speed);
+			}
+		}
+		Serial0.flush();
 		cmu_cam1.flush_cam();
-
-		cmu_cam1.track_red_light();
-		if (cmu_cam1.red_light_in_view)
-			Serial0.println("Found Red Light");
-		else
-			Serial0.println("No Red Light");
-
-		cmu_cam1.flush_cam();
-
 	}
+	neuro_bot.set_speed(0);
 }
 
 
 void drag_drive()
 {
 	int steering_angle = 1325;
-	neuro_bot.set_speed(DRAG_SPEED);
+	neuro_bot.set_speed(SLOW_SPEED);
 	neuro_bot.set_turn_angle(steering_angle);
 	//Steering Control
 	while (Serial0.read()!='e')
@@ -258,10 +295,10 @@ void drag_drive()
 
 void track_drive()
 {
-	//ekf matrices;
-
 	bool ignore_cam = false;
-
+	int del_x = 0;
+	int del_y = 0;
+	//ekf matrices;
 	float mean_predicted [STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 	float mean_best [STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 	float last_best [STATE_N][STATE_M] = {{761897.0},{-4573234.0},{0.00}}; //fill in with first set of gps values!
@@ -322,14 +359,14 @@ void track_drive()
 		new_gps_data = false;
 	}
 
-	neuro_bot.set_speed(FAST_SPEED);
+	neuro_bot.set_speed(SLOW_SPEED);
 
 	while (user_input!='e')
 	{
 		user_input = Serial0.read();
 		insula_read();
 
-		if (new_gps_data && false) //propagate EKF
+		if (new_gps_data && true) //propagate EKF
 		{
 			/**********Propagate Motion Model*********************/
 			mean_predicted[0][0] = last_best[0][0] + control_u[0][0]*cos(last_best[2][0]);
@@ -389,27 +426,28 @@ void track_drive()
 			update_zones();
 			Serial0.print("Current Zone:");
 			Serial0.println(curr_zone);
+			if (curr_zone != 0)
+				neuro_bot.set_speed(SLOW_SPEED);
 		}
 
-		if (curr_zone != 0)
-			neuro_bot.set_speed(SLOW_SPEED);
+
 
 		if (!ignore_cam)
 		{
-			while (cmu_cam1.track_stop_sign() != true){};
-			if (curr_zone == 1 && cmu_cam1.stop_sign_in_view && !just_processed_stop_sign)
+			cmu_cam1.track_stop_sign();
+			if (cmu_cam1.stop_sign_in_view)
 			{
-				neuro_bot.set_speed(0);
-				delay(3000);
-				neuro_bot.set_speed(SLOW_SPEED);
-				just_processed_stop_sign = true; //dont process stop signs until you leave zone.
+				del_x = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X2];
+//				del_y = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y2];
+				if (del_x>25 && del_x<30)
+				{
+					neuro_bot.set_speed(0);
+					delay(3000);
+					neuro_bot.set_speed(SLOW_SPEED);
+				}
 			}
-
-			while (cmu_cam1.track_red_light() != true) {};
-			while (curr_zone == 1 && cmu_cam1.red_light_in_view) //till you see the red light
-			{
-				while (cmu_cam1.track_red_light() != true) {};
-			}
+			else
+				del_x = 0;
 		}
 
 		//Steering Control
@@ -433,9 +471,6 @@ void track_drive()
 
 	}
 	neuro_bot.set_speed(0);
-
-
-
 }
 
 void CLI()
@@ -480,8 +515,8 @@ void setup()
 	Serial0.println("Vehicle is ready");
 
 	Serial0.println("Setting Up Camera");
-	//cmu_cam1.setup_cmu_cam(&Serial2);
-	//cmu_cam1.flush_cam();
+	cmu_cam1.setup_cmu_cam(&Serial2);
+	cmu_cam1.flush_cam();
 	Serial0.println("Camera Setup");
 }
 
