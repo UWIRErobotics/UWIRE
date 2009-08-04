@@ -167,17 +167,6 @@ void insula_read()
 			wgslla2xyz(curr_xpos_reading,curr_ypos_reading);
 			new_gps_data = true;
 		}
-		else if (insula_read==FORCE_X_POS)
-		{
-			while(Serial3.available() < 1){};
-			force_x = Serial3.read();
-		}
-		else if (insula_read==FORCE_X_NEG)
-		{
-			while(Serial3.available() < 1){};
-			force_x =Serial3.read();
-			force_x*=-1;
-		}
 	}
 }
 
@@ -261,45 +250,61 @@ void camera_check()
 	neuro_bot.set_speed(0);
 }
 
-
-void drag_drive()
-{
-	int steering_angle = 1325;
-	neuro_bot.set_speed(SLOW_SPEED);
-	neuro_bot.set_turn_angle(steering_angle);
-	//Steering Control
-	while (Serial0.read()!='e')
-	{
-		insula_read();
-		if (new_force_data)
-		{
-			if (force_x < 0)
-			{
-				//steering_angle = (0.00768900 * sq((float)force_x)) + 1300;
-				steering_angle = (0.00307574 * sq((float)force_x)) + 1300;
-				neuro_bot.set_turn_angle(steering_angle);
-			}
-			else
-			{
-				//steering_angle = (0.00615148 * sq((float)force_x - 255.0)) + 900;
-				steering_angle = (0.002306805 * sq((float)force_x - 255.0)) + 1200;
-				neuro_bot.set_turn_angle(steering_angle);
-			}
-			Serial0.println(force_x);
-			new_force_data = false;
-			Serial0.println(steering_angle);
-		}
-	}
-	neuro_bot.set_speed(0);
-}
-
 void track_drive()
 {
 	bool ignore_cam = false;
-	bool restricted_str = false;
-
 	int del_x = 0;
-	int del_y = 0;
+	char user_input = 'a';
+
+	neuro_bot.set_speed(SLOW_SPEED);
+
+	//Check if Cam needs to be used
+	Serial0.println("Use Cam?");
+	while(Serial0.available()<=0){};
+	user_input = Serial0.read();
+	if (user_input =='n' || user_input == 'N')
+	{
+		ignore_cam = true;
+		Serial0.println("Ignoring CAM!");
+	}
+	else
+		ignore_cam = false;
+
+	while (user_input!='e')
+	{
+		user_input = Serial0.read();
+		//Steering Control
+		if (new_steering_angle)
+		{
+			new_steering_angle = false;
+			neuro_bot.set_turn_angle(steering_angle);
+		}
+
+		if (!ignore_cam)
+		{
+			cmu_cam1.track_stop_sign();
+			if (cmu_cam1.stop_sign_in_view)
+			{
+				del_x = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X2];
+
+				Serial0.println(del_x);
+				if (del_x < -30.0 & del_x > -40.0)
+					Serial0.println("Stop Sign in Range");
+				del_x = 0;
+			}
+		}
+	}
+	neuro_bot.set_speed(0);
+
+}
+
+void gps_drive()
+{
+	bool ignore_cam = false;
+	int del_x = 0;
+	char user_input = 'a';
+
+
 	//ekf matrices;
 	float mean_predicted [STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 	float mean_best [STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
@@ -330,21 +335,6 @@ void track_drive()
 	float single_temp[STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 	float single_temp1[STATE_N][STATE_M] = {{0.0},{0.0},{0.0}};
 
-	char user_input = 'a';
-	//int steering_angle = 0;
-
-	//Check if Cam needs to be used
-	Serial0.println("Use Cam?");
-	while(Serial0.available()<=0){};
-	user_input = Serial0.read();
-	if (user_input =='n' || user_input == 'N')
-	{
-		ignore_cam = true;
-		Serial0.println("Ignoring CAM!");
-	}
-	else
-		ignore_cam = false;
-
 
 	if (false)
 	{
@@ -361,12 +351,10 @@ void track_drive()
 		control_u[0][0] = curr_velocity_reading;
 		new_gps_data = false;	}
 
-	neuro_bot.set_speed(SLOW_SPEED);
 
 	while (user_input!='e')
 	{
-		user_input = Serial0.read();
-		/*if (Serial0.available()>0)
+		if (Serial0.available()>0)
 		{
 			user_input = Serial0.read();
 			if (user_input == 'a')
@@ -395,9 +383,10 @@ void track_drive()
 			}
 		}
 		else
-			user_input = '0';*/
+			user_input = '0';
 
-		if (new_gps_data && false) //propagate EKF
+		insula_read(); //for gps readings..
+		if (new_gps_data && true) //propagate EKF
 		{
 			/**********Propagate Motion Model*********************/
 			mean_predicted[0][0] = last_best[0][0] + control_u[0][0]*cos(last_best[2][0]);
@@ -465,65 +454,8 @@ void track_drive()
 			y_error[history_index] = variance_best[2][2];
 			history_index++;
 			new_gps_data = false;
-			update_zones();
+//			update_zones();
 		}
-
-		/*if (crit_zone)
-			Serial0.println("CRITICAL ZONE!!");*/
-
-		/*if (user_input=='s')
-		{
-			Serial0.println("Switching Steering");
-			restricted_str = !restricted_str;
-			user_input='0';
-		}*/
-
-		//insula_read();
-		//Steering Control
-		if (new_steering_angle)
-		{
-			new_steering_angle = false;
-			/*if (force_x < 0)
-			{
-				if (restricted_str)
-					steering_angle = (0.00307574 * sq((float)force_x)) + 1300;
-				else
-					steering_angle = (0.00768900 * sq((float)force_x)) + 1300;
-
-				neuro_bot.set_turn_angle(steering_angle);
-			}
-			else
-			{
-				if (restricted_str)
-					steering_angle = (0.002306805 * sq((float)force_x - 255.0)) + 1200;
-				else
-					steering_angle = (0.00615148 * sq((float)force_x - 255.0)) + 900;
-
-				neuro_bot.set_turn_angle(steering_angle);
-			}*/
-			neuro_bot.set_turn_angle(steering_angle);
-
-			Serial0.println("new force");
-			//new_force_data = false;
-			//Serial0.println(steering_angle);
-		}
-
-		if (!ignore_cam)
-		{
-			Serial0.println("cam check");
-			cmu_cam1.track_stop_sign();
-			if (cmu_cam1.stop_sign_in_view)
-			{
-				del_x = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X2];
-				//del_y = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y2];
-
-				Serial0.println(del_x);
-				if (del_x < -30.0 & del_x > -40.0)
-					Serial0.println("Stop Sign in Range");
-				del_x = 0;
-			}
-		}
-
 	}
 	neuro_bot.set_speed(0);
 }
@@ -540,10 +472,11 @@ void CLI()
 		Serial0.println("Exiting RC Drive");
 	}
 
-	if (input == 'd')
+	if (input == 'g')
 	{
-		Serial0.println("Entering Drag Drive");
-		drag_drive();
+		Serial0.println("Entering GPS Drive");
+		gps_drive();
+		Serial0.println("Exiting GPS Drive");
 	}
 
 	if (input == 't')
