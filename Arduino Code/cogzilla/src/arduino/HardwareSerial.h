@@ -2,8 +2,8 @@
 #define HardwareSerial_h
 
 #include <inttypes.h>
-
 #include "Print.h"
+#include "../globals.h"
 
 struct ring_buffer;
 
@@ -38,8 +38,8 @@ extern HardwareSerial Serial0;
 extern HardwareSerial Serial1;
 extern HardwareSerial Serial2;
 extern HardwareSerial Serial3;
-extern bool new_steering_angle;
-extern float steering_angle;
+extern bool   new_steering_angle;
+extern float  steering_angle;
 
 #endif
 

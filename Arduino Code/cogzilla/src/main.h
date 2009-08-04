@@ -8,6 +8,7 @@
 #include "cmu_cam.h"
 #include "cog_globals.h"
 #include "matrix_math.cpp"
+#include "arduino/VirtualWire.h"
 
 /*****MAIN FUNCTIONS*****/
 void setup();

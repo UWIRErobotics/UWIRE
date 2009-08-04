@@ -3,11 +3,9 @@
 #include <inttypes.h>
 #include "wiring.h"
 #include "wiring_private.h"
-//#include "../vehicle_control.h"
-
-#include "../globals.h"
-
 #include "HardwareSerial.h"
+
+
 
 // Define constants and variables for buffering incoming serial data.  We're
 // using a ring buffer (I think), in which rx_buffer_head is the index of the
@@ -162,8 +160,7 @@ void HardwareSerial::flush()
 
 void HardwareSerial::write(uint8_t c)
 {
-	while (!((*_ucsra) & (1 << _udre)))
-		;
+	while (! ((*_ucsra) & (1 << _udre)) );
 
 	*_udr = c;
 }

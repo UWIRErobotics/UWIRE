@@ -1,5 +1,6 @@
 #include "main.h"
 
+
 /**************** UPDATE FLAGS/VARIABLES ********/
 bool new_gps_data = false;
 bool new_force_data = false;
@@ -17,17 +18,12 @@ float curr_ypos_best_estimate = 0;
 float curr_heading_best_estimate = 0;
 bool crit_zone=false;
 
-
-int history_index=0;
-float ekf_x_history[200] = {0};
-float ekf_y_history[200] = {0};
-float meas_x_history[200] = {0};
-float meas_y_history[200] = {0};
-float x_error[200] = {0};
-float y_error[200] = {0};
 int force_x;
 int force_y;
 
+uint8_t msghdr[6] = {RF_X_EKF, RF_Y_EKF,
+					 RF_X_pos, RF_Y_pos,
+					 RF_X_err, RF_Y_err};
 
 
 void wgslla2xyz(float wlat, float wlon)
@@ -49,7 +45,7 @@ void wgslla2xyz(float wlat, float wlon)
   curr_ypos_reading = (r_n + walt)*clat*sin(wlon*deg2rad);
 }
 
-
+/*
 void print_saved_data()
 {
 	Serial0.print("Curr_Index:");
@@ -69,6 +65,7 @@ void print_saved_data()
 		Serial0.println(y_error[i]*100000);
 	}
 }
+*/
 
 
 void rc_drive()
@@ -443,7 +440,7 @@ void gps_drive()
 			last_best[1][0] = mean_best[1][0];
 			last_best[2][0] = mean_best[2][0];
 
-			//save data
+/*			//save data
 			if (history_index>=200)
 				history_index=0;
 			ekf_x_history[history_index] = curr_xpos_best_estimate;
@@ -453,6 +450,23 @@ void gps_drive()
 			x_error[history_index] = variance_best[1][1];
 			y_error[history_index] = variance_best[2][2];
 			history_index++;
+*/
+// 			send data via wireless
+		    vw_wait_tx();	vw_send(&msghdr[0], 1);
+		    vw_wait_tx();   vw_send((uint8_t *)&curr_xpos_best_estimate, 4);
+		    vw_wait_tx();   vw_send(&msghdr[1], 1);
+		    vw_wait_tx();   vw_send((uint8_t *)&curr_ypos_best_estimate, 4);
+
+		    vw_wait_tx();	vw_send(&msghdr[2], 1);
+		    vw_wait_tx();   vw_send((uint8_t *)&curr_xpos_reading, 4);
+		    vw_wait_tx();   vw_send(&msghdr[3], 1);
+		    vw_wait_tx();   vw_send((uint8_t *)&curr_ypos_reading, 4);
+
+		    vw_wait_tx();	vw_send(&msghdr[4], 1);
+		    vw_wait_tx();   vw_send((uint8_t *)&variance_best[1][1], 4);
+		    vw_wait_tx();   vw_send(&msghdr[5], 1);
+		    vw_wait_tx();   vw_send((uint8_t *)&variance_best[2][2], 4);
+
 			new_gps_data = false;
 //			update_zones();
 		}
@@ -495,24 +509,29 @@ void CLI()
 
 	if (input == 'p')
 	{
-		print_saved_data();
+		//print_saved_data();
 	}
 }
 
 void setup()
 {
-	Serial0.begin(19200);   //user console
-	Serial3.begin(BRAIN_BAUD);    //insula comm
+	Serial0.begin(19200); 		//user console
+	Serial3.begin(BRAIN_BAUD); 	//insula comm
 	Serial0.println("Cogzilla Console");
 
-	Serial0.println("Setting Up Vehicle");
+	Serial0.print("Configuring vehicle...");
 	neuro_bot.setup_vehicle();
-	Serial0.println("Vehicle is ready");
+	Serial0.println(" done!");
 
-	Serial0.println("Setting Up Camera");
-	cmu_cam1.setup_cmu_cam(&Serial2);
-	cmu_cam1.flush_cam();
-	Serial0.println("Camera Setup");
+	Serial0.print("Configuring CMU cam...");
+	//cmu_cam1.setup_cmu_cam(&Serial2);
+	//cmu_cam1.flush_cam();
+	Serial0.println(" done!");
+
+	Serial0.print("Configuring RF comm...");
+	vw_set_tx_pin(53);
+    vw_setup(2400);
+	Serial0.println(" done!");
 }
 
 
@@ -520,6 +539,7 @@ void loop()
 {
 	if(Serial0.available() > 0)
 		CLI();
+
 }
 
 

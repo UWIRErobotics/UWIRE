@@ -42,6 +42,13 @@
 #define Radar2         0x94
 #define Radar3         0x98
 
+#define RF_X_EKF	   0x60
+#define RF_Y_EKF	   0x61
+#define RF_X_pos	   0x62
+#define RF_Y_pos	   0x63
+#define RF_X_err	   0x64
+#define RF_Y_err	   0x65
+
 
 /********** UNIONS **********/
 typedef union
