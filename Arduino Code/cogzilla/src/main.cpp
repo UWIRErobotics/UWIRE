@@ -15,8 +15,16 @@ float curr_heading_reading = 3.78771354267809;
 float curr_xpos_best_estimate = 0;
 float curr_ypos_best_estimate = 0;
 float curr_heading_best_estimate = 0;
-float curr_zone=0;
+bool crit_zone=false;
 
+
+int history_index=0;
+float ekf_x_history[200] = {0};
+float ekf_y_history[200] = {0};
+float meas_x_history[200] = {0};
+float meas_y_history[200] = {0};
+float x_error[200] = {0};
+float y_error[200] = {0};
 int force_x;
 int force_y;
 
@@ -41,6 +49,26 @@ void wgslla2xyz(float wlat, float wlon)
   curr_ypos_reading = (r_n + walt)*clat*sin(wlon*deg2rad);
 }
 
+
+void print_saved_data()
+{
+	Serial0.print("Curr_Index:");
+	Serial0.println(history_index);
+	for (int i=0;i<200;i++)
+	{
+		Serial0.print(ekf_x_history[i]*100);
+		Serial0.print(",");
+		Serial0.print(ekf_y_history[i]*100);
+		Serial0.print(",");
+		Serial0.print(meas_x_history[i]*100);
+		Serial0.print(",");
+		Serial0.print(meas_y_history[i]*100);
+		Serial0.print(",");
+		Serial0.print(x_error[i]*100000);
+		Serial0.print(",");
+		Serial0.println(y_error[i]*100000);
+	}
+}
 
 
 void rc_drive()
@@ -169,33 +197,22 @@ void insula_read()
 void update_zones()
 {
 	float distance_to_zone;
-	curr_zone = 0;
+
+	crit_zone = false;
+
+
+	distance_to_zone = sqrt (sq(curr_xpos_best_estimate - ZONE_1_X) + sq(curr_ypos_best_estimate - ZONE_1_Y));
+	if (distance_to_zone<=5)
+		crit_zone = true;
 
 	distance_to_zone = sqrt (sq(curr_xpos_best_estimate - ZONE_2_X) + sq(curr_ypos_best_estimate - ZONE_2_Y));
 	if (distance_to_zone<=5)
-		curr_zone = 2;
+		crit_zone = true;
 
 	distance_to_zone = sqrt (sq(curr_xpos_best_estimate - ZONE_3_X) + sq(curr_ypos_best_estimate - ZONE_3_Y));
 	if (distance_to_zone<=5)
-		curr_zone = 3;
+		crit_zone = true;
 
-	distance_to_zone = sqrt (sq(curr_xpos_best_estimate - ZONE_4_X) + sq(curr_ypos_best_estimate - ZONE_4_Y));
-	if (distance_to_zone<=5)
-		curr_zone = 4;
-
-	distance_to_zone = sqrt (sq(curr_xpos_best_estimate - ZONE_5_X) + sq(curr_ypos_best_estimate - ZONE_5_Y));
-	if (distance_to_zone<=5)
-		curr_zone = 5;
-
-	//Calculate Distance to zone1...most important
-	distance_to_zone = sqrt (sq(curr_xpos_best_estimate - ZONE_1_X) + sq(curr_ypos_best_estimate - ZONE_1_Y));
-	if (distance_to_zone<=5)
-		curr_zone = 1;
-
-	if (curr_zone == 0)
-	{
-		just_processed_stop_sign = false; //react to stop signs again.
-	}
 }
 
 
@@ -216,16 +233,14 @@ void camera_check()
 		if (cmu_cam1.stop_sign_in_view)
 		{
 			del_x = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_X2];
-			del_y = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y2];
+			//del_y = (int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y1] -(int)cmu_cam1.stop_sign_track_info[CMU_RESULT_Y2];
 
-			Serial0.print("del_x:");
-			Serial0.print(del_x);
-			Serial0.print("   ");
-			Serial0.print("del_y:");
-			Serial0.println(del_y);
+			Serial0.println(del_x);
+			if (del_x < -30.0 & del_x > -40.0)
+				Serial0.println("Stop Sign in Range");
 		}
-		else
-			Serial0.println("No Stop Sign");
+		//else
+		//	Serial0.println("No Stop Sign");
 
 		if (Serial0.available() > 0)
 		{
@@ -255,7 +270,7 @@ void camera_check()
 				Serial0.println(set_speed);
 			}
 		}
-		Serial0.flush();
+		//Serial0.flush();
 		cmu_cam1.flush_cam();
 	}
 	neuro_bot.set_speed(0);
@@ -275,14 +290,14 @@ void drag_drive()
 		{
 			if (force_x < 0)
 			{
-				steering_angle = (0.00768900 * sq((float)force_x)) + 1300;
-				//steering_angle = (0.00307574 * sq((float)force_x)) + 1300;
+				//steering_angle = (0.00768900 * sq((float)force_x)) + 1300;
+				steering_angle = (0.00307574 * sq((float)force_x)) + 1300;
 				neuro_bot.set_turn_angle(steering_angle);
 			}
 			else
 			{
-				steering_angle = (0.00615148 * sq((float)force_x - 255.0)) + 900;
-				//steering_angle = (0.002306805 * sq((float)force_x - 255.0)) + 1200;
+				//steering_angle = (0.00615148 * sq((float)force_x - 255.0)) + 900;
+				steering_angle = (0.002306805 * sq((float)force_x - 255.0)) + 1200;
 				neuro_bot.set_turn_angle(steering_angle);
 			}
 			Serial0.println(force_x);
@@ -296,6 +311,8 @@ void drag_drive()
 void track_drive()
 {
 	bool ignore_cam = false;
+	bool restricted_str = false;
+
 	int del_x = 0;
 	int del_y = 0;
 	//ekf matrices;
@@ -344,8 +361,9 @@ void track_drive()
 		ignore_cam = false;
 
 
-	if (false)
+	if (true)
 	{
+		Serial3.flush();
 		while(!new_gps_data)
 		{
 			insula_read();
@@ -356,14 +374,44 @@ void track_drive()
 		last_best[1][0] = curr_ypos_reading;
 		last_best[2][0] = curr_heading_reading;
 		control_u[0][0] = curr_velocity_reading;
-		new_gps_data = false;
-	}
+		new_gps_data = false;	}
 
-	neuro_bot.set_speed(SLOW_SPEED);
+	//neuro_bot.set_speed(SLOW_SPEED);
 
 	while (user_input!='e')
 	{
-		user_input = Serial0.read();
+		if (Serial0.available()>0)
+		{
+			user_input = Serial0.read();
+			if (user_input == 'a')
+			{
+				neuro_bot.set_turn_angle(set_angle+=25);
+				Serial0.print ("Angle Set to:");
+				Serial0.println(set_angle);
+			}
+			else if (user_input =='d')
+			{
+				neuro_bot.set_turn_angle(set_angle-=25);
+				Serial0.print("Angle Set to:");
+				Serial0.println(set_angle);
+			}
+			else if(user_input =='w')
+			{
+				neuro_bot.set_speed(set_speed+=5);
+				Serial0.print("Speed Set to:");
+				Serial0.println(set_speed);
+			}
+			else if(user_input =='s')
+			{
+				neuro_bot.set_speed(set_speed-=5);
+				Serial0.print("Speed Set to:");
+				Serial0.println(set_speed);
+			}
+		}
+		else
+			user_input = '0';
+
+
 		insula_read();
 
 		if (new_gps_data && true) //propagate EKF
@@ -422,17 +470,27 @@ void track_drive()
 			last_best[0][0] = mean_best[0][0];
 			last_best[1][0] = mean_best[1][0];
 			last_best[2][0] = mean_best[2][0];
+
+			//save data
+			if (history_index>=200)
+				history_index=0;
+			ekf_x_history[history_index] = curr_xpos_best_estimate;
+			ekf_y_history[history_index] = curr_ypos_best_estimate;
+			meas_x_history[history_index] = curr_xpos_reading;
+			meas_y_history[history_index] = curr_ypos_reading;
+			x_error[history_index] = variance_best[1][1];
+			y_error[history_index] = variance_best[2][2];
+			history_index++;
 			new_gps_data = false;
 			update_zones();
-			Serial0.print("Current Zone:");
-			Serial0.println(curr_zone);
-			if (curr_zone != 0)
-				neuro_bot.set_speed(SLOW_SPEED);
 		}
 
+		if (crit_zone)
+			Serial0.println("CRITICAL ZONE!!");
 
 
-		if (!ignore_cam)
+
+		/*if (!ignore_cam)
 		{
 			cmu_cam1.track_stop_sign();
 			if (cmu_cam1.stop_sign_in_view)
@@ -445,29 +503,44 @@ void track_drive()
 					delay(3000);
 					neuro_bot.set_speed(SLOW_SPEED);
 				}
-			}
+		}
 			else
 				del_x = 0;
 		}
+
+		if (user_input=='s')
+		{
+			Serial0.println("Switching Steering");
+			restricted_str = !restricted_str;
+			user_input='0';
+		}
+
 
 		//Steering Control
 		if (new_force_data)
 		{
 			if (force_x < 0)
 			{
-				steering_angle = (0.00768900 * sq((float)force_x)) + 1300;
+				if (restricted_str)
+					steering_angle = (0.00307574 * sq((float)force_x)) + 1300;
+				else
+					steering_angle = (0.00768900 * sq((float)force_x)) + 1300;
+
 				neuro_bot.set_turn_angle(steering_angle);
 			}
 			else
 			{
-				steering_angle = (0.00615148 * sq((float)force_x - 255.0)) + 900;
+				if (restricted_str)
+					steering_angle = (0.002306805 * sq((float)force_x - 255.0)) + 1200;
+				else
+					steering_angle = (0.00615148 * sq((float)force_x - 255.0)) + 900;
+
 				neuro_bot.set_turn_angle(steering_angle);
 			}
 			Serial0.println(force_x);
 			new_force_data = false;
 			Serial0.println(steering_angle);
-		}
-
+		}*/
 
 	}
 	neuro_bot.set_speed(0);
@@ -501,6 +574,11 @@ void CLI()
 		Serial0.println("Cam Check");
 		camera_check();
 		Serial0.println("Exiting Cam Check");
+	}
+
+	if (input == 'p')
+	{
+		print_saved_data();
 	}
 }
 

@@ -34,7 +34,7 @@
 
 
 /**************ZONE CONSTANTS******************/
-#define ZONE_1_X 761929.8125
+/*#define ZONE_1_X 761929.8125
 #define ZONE_1_Y -4573214
 
 #define ZONE_2_X 761930.3750
@@ -47,8 +47,16 @@
 #define ZONE_4_Y -4573227
 
 #define ZONE_5_X 761935.25
-#define ZONE_5_Y -4573235
+#define ZONE_5_Y -4573235*/
 
+#define ZONE_1_X 761893.75
+#define ZONE_1_Y -4572969.5
+
+#define ZONE_2_X 761848.31
+#define ZONE_2_Y -4572957.5
+
+#define ZONE_3_X 761865.38
+#define ZONE_3_Y -4572979.5
 
 /**************SPEED CONSTANTS*****************/
 #define FAST_SPEED 15
