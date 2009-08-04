@@ -3,6 +3,8 @@
 #include <inttypes.h>
 #include "wiring.h"
 #include "wiring_private.h"
+//#include "../vehicle_control.h"
+
 #include "../globals.h"
 
 #include "HardwareSerial.h"
@@ -12,6 +14,15 @@
 // location to which to write the next incoming character and rx_buffer_tail
 // is the index of the location from which to read.
 #define RX_BUFFER_SIZE 128
+
+bool positive_force_coming = false;
+bool negative_force_coming = false;
+//extern vehicle neuro_bot;
+//extern float steering_angle;
+//extern bool new_steering_angle;
+float steering_angle=0;
+bool new_steering_angle = false;
+int x_force=0;
 
 struct ring_buffer {
   unsigned char buffer[RX_BUFFER_SIZE];
@@ -59,7 +70,32 @@ SIGNAL(SIG_USART2_RECV)
 SIGNAL(SIG_USART3_RECV)
 {
 	unsigned char c = UDR3;
-  store_char(c, &rx_buffer3);
+
+	if (positive_force_coming)
+	{
+		x_force = c;
+		x_force *=-1;
+		steering_angle = (0.00615148 * sq(-1*(float)x_force - 255.0)) + 900;
+//		neuro_bot.set_turn_angle(steering_angle);
+		new_steering_angle = true;
+		positive_force_coming = false;
+	}
+	else if(negative_force_coming)
+	{
+		x_force = c;
+
+		steering_angle = (0.00768900 * sq((float)x_force)) + 1300;
+
+//		neuro_bot.set_turn_angle(steering_angle);
+		new_steering_angle = true;
+		negative_force_coming = false;
+	}
+	else if (c==FORCE_X_POS)
+	  positive_force_coming = true;
+	else if (c==FORCE_X_NEG)
+	  negative_force_coming = true;
+	else
+		store_char(c, &rx_buffer3);
 }
 
 // Constructors ////////////////////////////////////////////////////////////////

@@ -1,6 +1,7 @@
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
 
+
 /********** COMM. LINKS **********/
 #define RF_BAUD       2400
 #define BRAIN_BAUD    19200

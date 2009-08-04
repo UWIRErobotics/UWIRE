@@ -38,6 +38,8 @@ extern HardwareSerial Serial0;
 extern HardwareSerial Serial1;
 extern HardwareSerial Serial2;
 extern HardwareSerial Serial3;
+extern bool new_steering_angle;
+extern float steering_angle;
 
 #endif
 
