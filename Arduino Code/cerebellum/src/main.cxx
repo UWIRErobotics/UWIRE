@@ -7,6 +7,8 @@
 	#define LIDAR_BAUD    250000
 /********************************/
 
+nybble8 functionflags;
+
 
 void setup()
 {
@@ -91,6 +93,23 @@ void CLI(char *msg, uint8_t length)
 	else if('h' == *msg)	Lidar.supertest();
 	else if('r' == *msg)	Lidar.reset();
 
+	else if('i' == *msg)
+	{
+		(functionflags.upper) ^= 0xF;
+
+		if(functionflags.upper)		Serial0.println("NEW LIDAR on");
+		else						Serial0.println("NEW LIDAR off");
+	}
+
+	else if('j' == *msg)
+	{
+		(functionflags.lower) ^= 0xF;
+
+		if(functionflags.lower)	Serial0.println("LKG LIDAR on");
+		else					Serial0.println("LKG LIDAR off");
+	}
+
+
 
 /*******************GPS configuration *************************/
 	else if('1' == *msg)	GPS.stop_feed(GPS.GGA);
@@ -125,10 +144,24 @@ int main(void)
 	init();
 	setup();
     
-	for (;;) // loop()
+	do
 	{
+		if (functionflags.upper) {
+			digitalWrite(24, HIGH);
+			Lidar.supertest();
+			digitalWrite(24, LOW);
+		}
+
+		if (functionflags.lower) {
+			digitalWrite(26, HIGH);
+			Lidar.GetPF();
+			digitalWrite(26, LOW);
+		}
+
 		check_msg();
-	}
+
+		delay(25);
+	} while(1);
         
 	return 0;
 }

@@ -5,17 +5,17 @@
 /*********** LIDAR CONSTANTS *********/
 #define MAX_DIST	 2500  //measured in [mm]
 #define MIN_DIST     66	   //
-#define LIDAR_FORCE  5000
+#define LIDAR_FORCE  2468
 /*************************************/
 
 
 URG04LX::URG04LX()
        : HardwareSerial(&rx_buffer2, &UBRR2H, &UBRR2L, &UCSR2A, &UCSR2B, &UDR2, RXEN2, TXEN2, RXCIE2, UDRE2, U2X2)
 {// use "MS..." for 2-bit encoding, "MD..." for 3-bit
-	uint8_t msg[17] = {'M','S','0','1','2','8',	 //start step (128 = -90 degrees)
-						    '0','6','4','0',	 //end step   (640 = +90 degrees)
-						    '0','2','1',		 //cluster count, scan interval
-						    '0','1',0xA,'\n'}; 	 //# of scans
+	uint8_t msg[17] = {'M','S','0','1','2','8',	  //start step (128 = -90 degrees)
+						       '0','6','4','0',	  //end step   (640 = +90 degrees)
+						       '0','2','1',		  //cluster count, scan interval
+						       '0','1',0xA,'\n'}; //# of scans
 
 	for(int i = 0; i < 17; i++)
 		distance_msg[i] = msg[i];
@@ -35,7 +35,7 @@ void URG04LX::supertest(void)
 //	calculate potential fields
 	RegionCalc(num_msr);
 
-//	report forces for debugging
+/*	report forces for debugging
 	Serial0.println();
 	Serial0.print("X1 = ");	Serial0.println(x1, DEC);
 	Serial0.print("Y1 = ");	Serial0.println(y1, DEC);
@@ -47,7 +47,14 @@ void URG04LX::supertest(void)
 	Serial0.print("Y3 = ");	Serial0.println(y3, DEC);
 	Serial0.println();
 	Serial0.print("X4 = ");	Serial0.println(x4, DEC);
-	Serial0.print("Y4 = ");	Serial0.println(y4, DEC);
+	Serial0.print("Y4 = ");	Serial0.println(y4, DEC);	*/
+
+	Serial0.print(x1, DEC); Serial0.print(",");
+	Serial0.print(x2, DEC); Serial0.print(",");
+	Serial0.print(x3, DEC); Serial0.print(",");
+	Serial0.print(x4, DEC); Serial0.print(",");
+	Serial0.println();
+
 	setSerial(ON);
 }
 
